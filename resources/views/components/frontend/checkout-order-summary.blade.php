@@ -19,7 +19,7 @@
 
             <tr>
                 <td style="color: #000000;">Subtotal</td>
-                <td style="text-align: right; color: #000000;">{{ currencyformat($cart->total()) }}
+                <td style="text-align: right; color: #000000;">{{ currencyformat($cart->grand_total) }}
                 </td>
             </tr>
         </tbody>

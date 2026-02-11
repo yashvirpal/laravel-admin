@@ -53,6 +53,7 @@
     <script src="{{ asset('frontend/assets/js/glightbox.min.js') }}"></script>
     <script src="{{ asset('frontend/assets/js/aos.js') }}"></script>
     <script src="{{ asset('frontend/assets/js/custom.js') }}"> </script>
+    <script src="{{ asset('frontend/assets/js/cart.js') }}"> </script>
 
     <script>
         window.App = {
@@ -62,7 +63,7 @@
                 cartUpdate: @json(route('cart.update', ':id')),
                 cartRemove: @json(route('cart.remove', ':id')),
                 cartMini: @json(route('cart.mini')),
-                cartProductQty: @json(route('cart.productQty', ':id')),
+             
                 checkout: @json(route('page', 'checkout')),
                 wishlistToggle: @json(route('wishlist.toggle', ':id')),
                 wishlistCount: @json(route('wishlist.count')),
@@ -70,7 +71,11 @@
             }
         };
     </script>
-    {{-- Stack Script --}}
+    {{-- Stack Script
+     //  cartProductQty: @json(route('cart.productQty', ':id')),
+    
+    
+    --}}
     @stack('scripts')
 </body>
 

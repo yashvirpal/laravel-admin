@@ -3,7 +3,28 @@
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AddressController;
+use App\Http\Controllers\Admin\ProductCategoryController;
+use App\Http\Controllers\Admin\ProductTagController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductAttributeController;
+use App\Http\Controllers\Admin\ProductAttributeValueController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\TransactionController;
+
+use App\Http\Controllers\Admin\BlogCategoryController;
+use App\Http\Controllers\Admin\BlogTagController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\CalculatorController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\GlobalSectionController;
+use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Support\Facades\Route;
+
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -27,44 +48,50 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // 🚪 Logout
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
-        Route::resource('users.addresses', \App\Http\Controllers\Admin\AddressController::class)->shallow();
+        Route::resource('users', UserController::class);
+        Route::resource('users.addresses', AddressController::class)->shallow();
 
 
 
 
         // Categories
-        Route::resource('product-categories', \App\Http\Controllers\Admin\ProductCategoryController::class);
+        Route::resource('product-categories', ProductCategoryController::class);
 
         // Tags
-        Route::resource('product-tags', \App\Http\Controllers\Admin\ProductTagController::class);
+        Route::resource('product-tags', ProductTagController::class);
 
         // Products
-        Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
+        Route::resource('products', ProductController::class);
+
+        Route::resource('product-attributes', ProductAttributeController::class);
+
+        Route::prefix('product-attributes/{product_attribute}')->group(function () {
+            Route::resource('values', ProductAttributeValueController::class)->names('product-attribute-values');
+        });
 
         // Orders
-        Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class);
+        Route::resource('orders', OrderController::class);
 
         // Coupons
-        Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
+        Route::resource('coupons', CouponController::class);
 
         // Invoices
-        Route::get('transactions/{transaction}/invoice', [\App\Http\Controllers\Admin\TransactionController::class, 'invoice'])->name('transactions.invoice');
-        Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class);
+        Route::get('transactions/{transaction}/invoice', [TransactionController::class, 'invoice'])->name('transactions.invoice');
+        Route::resource('transactions', TransactionController::class);
 
-        Route::resource('blog-categories', \App\Http\Controllers\Admin\BlogCategoryController::class);
-        Route::resource('blog-tags', \App\Http\Controllers\Admin\BlogTagController::class);
-        Route::resource('blog-posts', \App\Http\Controllers\Admin\BlogPostController::class);
+        Route::resource('blog-categories', BlogCategoryController::class);
+        Route::resource('blog-tags', BlogTagController::class);
+        Route::resource('blog-posts', BlogPostController::class);
 
-        Route::resource('pages', \App\Http\Controllers\Admin\PageController::class);
-        Route::resource('calculators', \App\Http\Controllers\Admin\CalculatorController::class);
-        Route::resource('testimonials', App\Http\Controllers\Admin\TestimonialController::class);
-        Route::resource('sliders', App\Http\Controllers\Admin\SliderController::class);
-        Route::resource('global-sections', App\Http\Controllers\Admin\GlobalSectionController::class);
+        Route::resource('pages', PageController::class);
+        Route::resource('calculators', CalculatorController::class);
+        Route::resource('testimonials', TestimonialController::class);
+        Route::resource('sliders', SliderController::class);
+        Route::resource('global-sections', GlobalSectionController::class);
 
 
-        //Route::resource('settings', \App\Http\Controllers\Admin\SettingController::class);
-        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        //Route::resource('settings', SettingController::class);
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
     });
 });

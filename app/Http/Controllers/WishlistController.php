@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class WishlistController extends Controller
 {
@@ -24,41 +25,74 @@ class WishlistController extends Controller
         ));
     }
 
-    public function toggle(Product $product)
+
+
+    public function toggle(Product $product): JsonResponse
     {
-        $userId = Auth::id();
+        try {
+            $userId = Auth::id();
 
-        $wishlist = Wishlist::where([
-            'user_id' => $userId,
-            'wishlistable_id' => $product->id,
-            'wishlistable_type' => Product::class,
-        ])->first();
+            if (!$userId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You must be logged in to manage the wishlist.'
+                ], 401);
+            }
 
-        if ($wishlist) {
-            $wishlist->delete();
-            return response()->json(['status' => 'removed']);
+            $wishlist = Wishlist::where([
+                'user_id' => $userId,
+                'wishlistable_id' => $product->id,
+                'wishlistable_type' => Product::class,
+            ])->first();
+
+            if ($wishlist) {
+                $wishlist->delete();
+                return response()->json([
+                    'status' => true,
+                    'action' => 'removed',
+                    'message' => 'Product removed from wishlist.'
+                ]);
+            }
+
+            Wishlist::create([
+                'user_id' => $userId,
+                'wishlistable_id' => $product->id,
+                'wishlistable_type' => Product::class,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'action' => 'added',
+                'message' => 'Product added to wishlist.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => config('app.debug') ? $e->getMessage() : 'Could not update wishlist. Please try again.'
+            ], 500);
         }
-
-        Wishlist::create([
-            'user_id' => $userId,
-            'wishlistable_id' => $product->id,
-            'wishlistable_type' => Product::class,
-        ]);
-
-        return response()->json(['status' => 'added']);
     }
+
 
     public function count()
     {
-        $userId = Auth::id();
+        try {
+            $userId = Auth::id();
 
-        $count = $userId ? Wishlist::where('user_id', $userId)->count() : 0;
+            $count = $userId ? Wishlist::where('user_id', $userId)->count() : 0;
 
-        return response()->json([
-            'success' => true,
-            'count' => $count,
-        ]);
-
-
+            return response()->json([
+                'status' => true,
+                'count' => $count,
+                'message' => 'Wishlist count retrieved successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'count' => 0,
+                'error' => $e->getMessage(),
+                'message' => config('app.debug') ? $e->getMessage() : 'Could not retrieve wishlist count. Please try again.'
+            ], 500);
+        }
     }
 }

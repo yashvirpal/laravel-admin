@@ -19,7 +19,8 @@
                             <th>#</th>
                             <th>Title</th>
                             <th>Categories</th>
-                            <th>Tags</th>
+                            <!-- <th>Tags</th> -->
+                            <th>Type</th>
                             <th>Price</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -52,7 +53,8 @@
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                     { data: 'title', name: 'title' },
                     { data: 'categories', name: 'categories.title', orderable: false, searchable: false },
-                    { data: 'tags', name: 'tags.title', orderable: false, searchable: false },
+                    // { data: 'tags', name: 'tags.title', orderable: false, searchable: false },
+                    { data: 'type', name: 'type' },
                     { data: 'price', name: 'price' },
                     { data: 'status', name: 'status', orderable: false, searchable: false },
                     { data: 'actions', name: 'actions', orderable: false, searchable: false },

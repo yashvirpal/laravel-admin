@@ -25,6 +25,27 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        Schema::create('addresses', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id'); // FK to users
+            $table->enum('type', ['billing', 'shipping']); // Address type
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('address_line1')->nullable();
+            $table->string('address_line2')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('country')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->boolean('status')->default(true)->default(1)->comment('Active/Inactive');
+            $table->boolean('is_default')->default(true)->default(1);
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            // $table->unique(['user_id', 'type']); // only one billing + one shipping per user
+        });
+
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -47,6 +68,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('users');
+        Schema::dropIfExists('addresses');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }

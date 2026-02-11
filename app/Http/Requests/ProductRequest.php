@@ -19,15 +19,16 @@ class ProductRequest extends FormRequest
         return [
             // Basic Info
             'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:products,slug,' . $id,
+            'slug' => 'required|string|max:255|unique:products,slug,' . $id,
             'sku' => 'nullable|string|max:100|unique:products,sku,' . $id,
 
             // Pricing
-            'regular_price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0|lt:regular_price',
+            'regular_price' => 'required_if:has_variants,false|numeric|gte:0|decimal:0,2',
+            'sale_price' => 'nullable|numeric|decimal:0,2|lt:regular_price',
 
             // Inventory
-            'stock' => 'required|integer|min:0',
+            'stock' => 'required_if:has_variants,false|integer|gte:0',
+            'has_variants' => 'boolean',
 
             // Descriptions
             'short_description' => 'nullable|string|max:500',
@@ -63,6 +64,13 @@ class ProductRequest extends FormRequest
             'gallery' => 'nullable|array',
             'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery_alt.*' => 'nullable|string|max:255',
+
+
+            'variants.*.sku' => 'required_if:has_variants,true|string|distinct',
+            'variants.*.regular_price' => 'required_if:has_variants,true|numeric|gt:0',
+            'variants.*.sale_price' => 'nullable|numeric|lt:variants.*.regular_price',
+            'variants.*.stock' => 'required_if:has_variants,true|integer|gte:0',
+            'variants.*.image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 

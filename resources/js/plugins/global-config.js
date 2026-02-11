@@ -347,12 +347,13 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
                 "X-Requested-With": "XMLHttpRequest",
                 "Accept": "application/json"
             },
-            beforeSend: showLoader,
+            beforeSend: showLoader(),
             success(response) {
                 hideLoader();
 
                 if (response.message) {
-                    $form.find(".msg").text(response.message).addClass("text-success");
+                    toastr.success(response.message);
+                    //$form.find(".msg").text(response.message).addClass("text-success");
                 }
 
                 if (response.redirect_url) {
@@ -364,7 +365,8 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
 
                 if (xhr.responseJSON?.errors) {
                     Object.keys(xhr.responseJSON.errors).forEach(field => {
-                        $form.find(".error_" + field).text(xhr.responseJSON.errors[field][0]);
+                       // $form.find(".error_" + field).text(xhr.responseJSON.errors[field][0]);
+                        toastr.success(xhr.responseJSON.errors[field][0])
                     });
                 }
             }
@@ -444,7 +446,8 @@ export function initFormValidatorr(formSelector, fields = [], onSuccessCallback 
             success: function (response) {
                 hideLoader();
                 if (response.message) {
-                    $form.find(".msg").text(response.message).addClass("text-success");
+                    toastr.success(response.message);
+                    // $form.find(".msg").text(response.message).addClass("text-success");
                 }
                 if (response.redirect_url) {
                     setTimeout(() => window.location.href = response.redirect_url, 2500);
@@ -456,6 +459,7 @@ export function initFormValidatorr(formSelector, fields = [], onSuccessCallback 
             error: function (xhr) {
                 hideLoader();
                 if (xhr.status === 419) {
+                    toastr.error(xhr.responseJSON?.message || 'Session expired. Please refresh the page.');
                     // $form.find(".msg").text(xhr.responseJSON?.message || 'Session expired. Please refresh the page.').addClass("text-red-600");
                     return;
                 }
@@ -466,7 +470,8 @@ export function initFormValidatorr(formSelector, fields = [], onSuccessCallback 
                         $form.find(" .error_" + field).text(errors[field][0]);
                     }
                 } else {
-                    $form.find(".msg").text(xhr.responseJSON.message).addClass("text-danger");
+                    toastr.error(xhr.responseJSON.message || 'An error occurred. Please try again.');
+                    // $form.find(".msg").text(xhr.responseJSON.message).addClass("text-danger");
                 }
                 setTimeout(() => {
                     $form.find(".error,.msg").empty();

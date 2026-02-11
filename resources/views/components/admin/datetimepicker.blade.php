@@ -23,7 +23,7 @@
                     singleDatePicker: true,
                     timePicker: true,
                     timePicker24Hour: true,
-                    startDate: moment(),   // current date & time
+                    //startDate: moment(),   // current date & time
                     locale: { format: 'YYYY-MM-DD HH:mm' }
                 },
                 'daterange': {

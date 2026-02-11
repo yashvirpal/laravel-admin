@@ -43,6 +43,14 @@ return [
         'original' => ['width' => null,'height' => null],
         'path'     => 'uploads/products',
     ],
+    'product_variant' => [
+        'icon'     => ['width' => 100,'height' => 100],
+        'small'    => ['width' => 300,'height' => 300],
+        'medium'   => ['width' => 600,'height' => 600],
+        'large'    => ['width' => 1000,'height' => 1000],
+        'original' => ['width' => null,'height' => null],
+        'path'     => 'uploads/products/variants',
+    ],
 
     /*
     |--------------------------------------------------------------------------

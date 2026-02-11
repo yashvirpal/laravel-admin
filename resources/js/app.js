@@ -32,6 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+import toastr from 'toastr';
+import 'toastr/build/toastr.min.css';
+
+// Optional configuration
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+};
+window.toastr = toastr;
+
+//toastr.success('Hello! This is a success toast');
+//toastr.error('Oops! Something went wrong.');
 
 
 

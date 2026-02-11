@@ -31,7 +31,7 @@
                     </a>
                 </li>
                 <li
-                    class="nav-item {{ request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.product-tags.*', 'admin.orders.*', 'admin.coupons.*') ? 'menu-open' : '' }}">
+                    class="nav-item {{ request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.product-tags.*', 'admin.product-attributes.*', 'admin.product-attribute-values.*', 'admin.orders.*', 'admin.coupons.*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('admin.ecommerce.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-cart4"></i>
                         <p>E-Commerce <i class="nav-arrow bi bi-chevron-right"></i></p>
@@ -51,6 +51,14 @@
                                 <p>Product Tags</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.product-attributes.index') }}"
+                                class="nav-link {{ isActiveRoute('admin.product-attribute-values.*') }} {{ isActiveRoute('admin.product-attributes.*') }}">
+                                <i class="nav-icon bi bi-tags"></i>
+                                <p>Product Attributes</p>
+                            </a>
+                        </li>
+
                         <li class="nav-item">
                             <a href="{{ route('admin.products.index') }}"
                                 class="nav-link {{ isActiveRoute('admin.products.*') }}">

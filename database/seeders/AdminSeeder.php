@@ -17,12 +17,12 @@ class AdminSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'email' => 'superadmin@localhost.com',
-                'password' => 'password',
+                'password' => 'Admin@1234',
             ],
             [
                 'name' => 'Admin',
                 'email' => 'admin@localhost.com',
-                'password' => 'password',
+                'password' => 'Admin@1234',
             ],
         ];
 

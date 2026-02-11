@@ -17,6 +17,7 @@
     <meta name="description" content="Yashvir Pal and The Creative Coders — building modern, creative web solutions.">
     <meta name="keywords"
         content="Yashvir Pal, The Creative Coders, Web Development, Laravel, PHP, Creative Web Agency">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta name="supported-color-schemes" content="light dark" />
     <link rel="preload" href="{{ asset('backend/css/adminlte.css')}}" as="style" />

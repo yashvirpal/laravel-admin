@@ -5,13 +5,13 @@
     }
 @endphp
 
-<div class="input-group quantity-group qty-wrapper" id="qtywrapper{{ $productId }}">
+<div class="input-group quantity-group qty-wrapper" id="qtywrapper{{ $product->id }}">
     <button class="btn btn-outline-secondary qty-btn" data-type="minus" type="button" {{ $disabled ? 'disabled' : '' }}>
         −
     </button>
 
     <input type="number" class="form-control text-center qty-input" value="{{ max(1, (int) $cartQty) }}" min="1"
-        data-product-id="{{ $productId }}" {{ $disabled ? 'disabled' : '' }}
+        data-product-id="{{ $product->id }}" {{ $disabled ? 'disabled' : '' }}
         title="{{ $disabled ? 'Quantity locked — already in cart' : '' }}">
 
     <button class="btn btn-outline-secondary qty-btn" data-type="plus" type="button" {{ $disabled ? 'disabled' : '' }}>

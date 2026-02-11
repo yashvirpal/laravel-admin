@@ -398,195 +398,7 @@ function hideLoader() {
 }
 
 
-/* Cart & Mini Cart functionality is handled in CartController.php */
 
-
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest(".qty-btn");
-  if (!btn) return;
-
-  const wrapper = btn.closest(".qty-wrapper");
-  const input = wrapper.querySelector(".qty-input");
-  const productId = input.dataset.productId;
-  let value = parseInt(input.value);
-
-  const min = parseInt(input.min) || 1;
-  const max = parseInt(input.max) || 999;
-
-  if (btn.dataset.type === "plus" && value < max) value++;
-  if (btn.dataset.type === "minus" && value > min) value--;
-
-  input.value = value;
-
-  const buyNowBtn = document.querySelector(`#buyNow${productId}`);
-  if (!buyNowBtn) {
-    if (value === 1) return;
-    updateCart(productId, value);
-  }
-});
-
-function route(name, id = null) {
-  let url = App.routes[name];
-  return id ? url.replace(':id', id) : url;
-}
-
-
-function addToCart(productId, qty = 1, buyNow = false) {
-  showLoader();
-  const input = document.querySelector('.qty-input');
-  if (input) {
-    qty = input.value;
-  }
-  fetch(route('cartAdd', productId), {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({ quantity: qty })
-  })
-    .then(res => res.json())
-    .then(data => {
-      loadMiniCart();
-      document.querySelectorAll('.cartCount').forEach(el => el.innerText = data.cart_count);
-
-      const buyNowBtn = document.querySelector(`#buyNow${productId}`);
-
-      if (buyNowBtn) {
-        const addCart = document.querySelector(`#addCart${productId}`);
-        addCart.disabled = true;
-        addCart.textContent = 'Already in Cart';
-        buyNowBtn.disabled = true;
-
-        const wrapper = document.querySelector(`#qtywrapper${productId}`);
-        wrapper.querySelectorAll("button, input").forEach((el) => {
-          el.disabled = true;
-        });
-
-
-      } else {
-        const addCartButtons = document.querySelectorAll(`.addCart${productId}`);
-        addCartButtons.forEach(function (item) {
-          item.disabled = true;
-          item.setAttribute('title', 'Already in Cart');
-        });
-      }
-      if (buyNow) {
-        setTimeout(() => {
-          window.location = window.routes.checkOutUrl
-        }, 2000)
-      }
-
-    })
-    .catch(err => console.error(err))
-    .finally(hideLoader);
-}
-
-function updateCart(productId, qty) {
-  showLoader();
-  fetch(route('cartUpdate', productId), {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({ quantity: qty })
-  })
-    .then(res => res.json())
-    .then(data => {
-      document.querySelector(`#subtotal-${productId}`).innerText = `₹${data.product_subtotal.toFixed(2)}`;
-      document.getElementById('cart-subtotal').innerText = `₹${data.cart_total.toFixed(2)}`;
-      document.getElementById('cart-total').innerText = `₹${data.cart_total.toFixed(2)}`;
-
-      loadMiniCart()
-    })
-    .catch(err => console.error(err))
-    .finally(hideLoader);
-}
-
-function removeFromCart(productId) {
-  showLoader();
-  fetch(route('cartRemove', productId), {
-    method: 'DELETE',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
-    }
-  })
-    .then(res => res.json())
-    .then(data => {
-
-      loadMiniCart();
-      // ---- CART PAGE ONLY ----
-      const cartItem = document.getElementById(`cart-item-${productId}`);
-
-      if (cartItem) {
-        cartItem.remove();
-
-        if (data.cart_count === 0) {
-          const cartPage = document.getElementById('cartpage');
-          if (cartPage) {
-            cartPage.innerHTML = `<div class="text-center py-4">Your cart is empty.</div>`;
-          }
-        } else {
-          const subtotalEl = document.getElementById('cart-subtotal');
-          const totalEl = document.getElementById('cart-total');
-
-          if (subtotalEl) {
-            subtotalEl.innerText = `${window.symbol}${data.cart_total.toFixed(2)}`;
-          }
-
-          if (totalEl) {
-            totalEl.innerText = `${window.symbol}${data.cart_total.toFixed(2)}`;
-          }
-        }
-      }
-    })
-    .catch(err => console.error(err))
-    .finally(hideLoader);
-}
-
-
-function loadMiniCart() {
-
-  fetch(route('cartMini'), {
-    headers: { 'Accept': 'application/json' }
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) return;
-
-      document.getElementById('minicart').innerHTML = data.html;
-      document.querySelectorAll('.cartCount').forEach(el => el.innerText = data.cart_count);
-    })
-    .catch(err => console.error(err));
-}
-
-
-document.addEventListener('DOMContentLoaded', loadMiniCart);
-
-function productQty(productId) {
-  if (!productId) return;
-
-  const input = document.querySelector('.qty-input');
-  if (!input) return;
-
-  fetch(route('cartProductQty', productId), {
-    headers: {
-      'Accept': 'application/json'
-    }
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.qty > 0) {
-        input.value = data.qty;
-      }
-    })
-    .catch(err => console.error('Qty fetch error:', err));
-}
 
 /*Wishlist Function */
 function wishlistCount() {
@@ -595,11 +407,18 @@ function wishlistCount() {
   })
     .then(res => res.json())
     .then(data => {
-      if (!data.success) return;
+      if (data.status === false) {
+        toastr.error(data.message);
+        return;
+      }
+
       const el = document.getElementById('wishlistCount');
       if (el) el.textContent = data.count;
     })
-    .catch(err => console.error('Wishlist count error:', err));
+    .catch(err => {
+      console.error("Wishlist Count Error: " + err);
+      toast.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
+    })
 }
 
 function wishlistToggle(productId, ele = null) {
@@ -618,20 +437,23 @@ function wishlistToggle(productId, ele = null) {
     .then(res => res.json())
     .then(data => {
       wishlistCount();
-
+      if (data.status === false) {
+        toastr.error(data.message);
+        return;
+      }
+      toastr.success(data.message);
       const icon = ele.querySelector('i');
 
       if (!icon) return;
 
+      ele.title = data.message;
       // toggle heart
       if (icon.classList.contains('far')) {
         icon.classList.remove('far');
         icon.classList.add('fas');
-        ele.title = 'Remove from Wishlist';
       } else {
         icon.classList.remove('fas');
         icon.classList.add('far');
-        ele.title = 'Add to Wishlist';
       }
       let wishlistPage = document.getElementById('wishlistPage');
       if (wishlistPage) {
@@ -640,7 +462,8 @@ function wishlistToggle(productId, ele = null) {
       }
     })
     .catch(err => {
-      console.error(err);
+      console.error("Wishlist Toggle Error: " + err);
+      toast.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
     })
     .finally(() => {
       ele.disabled = false;
@@ -653,6 +476,14 @@ document.addEventListener('DOMContentLoaded', () => {
   wishlistCount();
 
 });
+// document.addEventListener("DOMContentLoaded", () => {
+//     console.log("custom.js loaded");
+
+//     // Example toasts
+//     toastr.success("✅ Test success");
+//     toastr.error("❗ Oops! Something went wrong 😕"); // This now always works
+// });
+
 
 // function wishlistCount() {
 //   fetch(route('wishlistCount'), {

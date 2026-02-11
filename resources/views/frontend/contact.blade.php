@@ -70,7 +70,7 @@
                 <div class="col-lg-7">
                     <div class="form-card">
                         <h2 class="section-title">Get in Touch</h2>
-                        <form id="contactForm">
+                        <form id="contactForm" method="post" action="{{ route('contact.submit') }}">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
                                 <input type="text" class="form-control" id="name" placeholder="Enter your name" required>

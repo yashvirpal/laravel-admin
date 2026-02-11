@@ -12,6 +12,8 @@ class Address extends Model
     protected $fillable = [
         'user_id',
         'type', // 'billing' or 'shipping'
+        'first_name',
+        'last_name',
         'address_line1',
         'address_line2',
         'city',
@@ -20,6 +22,8 @@ class Address extends Model
         'postal_code',
         'phone',
         'status',
+        'is_default',
+
     ];
 
     protected $casts = [
@@ -30,7 +34,7 @@ class Address extends Model
     {
         return $query->where('status', 1);
     }
-    
+
     public function user()
     {
         return $this->belongsTo(User::class);

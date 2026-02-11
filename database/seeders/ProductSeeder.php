@@ -4,11 +4,18 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\ProductCategory;
 use App\Models\ProductTag;
 use App\Models\Product;
+use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
+use App\Models\ProductVariant;
+use App\Models\ProductFaq;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Faker\Factory as Faker;
+
 
 class ProductSeeder extends Seeder
 {
@@ -17,7 +24,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $author = User::first();
+        $author = Admin::first();
 
         // // 1️⃣ Create Product Categories
         // $categories = [
@@ -230,6 +237,61 @@ class ProductSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ 10 sample products created with categories and tags');
+        $this->command->info('✅ 10 simple products created with categories and tags');
+
+        // Product Variants and Attributes Example
+        // Create a product with variants based on attributes like Size and Color
+        $product = Product::create([
+            'title' => 'T-Shirt',
+            'slug' => 't-shirt',
+            'regular_price' => 499,
+            'has_variants' => true,
+            'stock' => 100
+        ]);
+
+        // Attribute: Size
+        $size = ProductAttribute::create(['name' => 'Size', 'slug' => 'size']);
+        $s = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Small', 'slug' => 'small']);
+        $m = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Medium', 'slug' => 'medium']);
+
+        // Attribute: Color
+        $color = ProductAttribute::create(['name' => 'Color', 'slug' => 'color']);
+        $red = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Red', 'slug' => 'red']);
+        $blue = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Blue', 'slug' => 'blue']);
+
+        // Assign attributes to product
+        $product->attributes()->attach([$size->id, $color->id]);
+
+        // Create two variants
+        $v1 = ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'TS-M-RED',
+            'regular_price' => 499,
+            'stock' => 20
+        ]);
+        $v1->values()->attach([$m->id, $red->id]);
+
+        $v2 = ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'TS-S-BLU',
+            'regular_price' => 449,
+            'stock' => 30
+        ]);
+        $v2->values()->attach([$s->id, $blue->id]);
+        $this->command->info('✅ Product with variants created');
+
+
+        $faker = Faker::create();
+        foreach (range(1, 10) as $i) {
+            $productid= rand(1, 10);
+            ProductFaq::create([
+                'product_id' =>$productid,
+                'question' => $faker->sentence(),
+                'answer' => $faker->paragraph(),
+            ]);
+            $this->command->info('✅ Product Faq created for '.$productid);
+        }
+
+         
     }
 }

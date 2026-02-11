@@ -2,8 +2,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Services\CartService;
+
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Address;
+use App\Models\Order;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Validation\ValidationException;
+
+use App\Facades\CartServiceFacade as CartFacade;
+
 
 use App\Http\Requests\Auth\LoginRequest;
 
@@ -19,13 +32,13 @@ class CheckoutController extends Controller
         try {
             $request->authenticate(); // handles email + password
             $request->session()->regenerate();
-
+            CartFacade::mergeGuestCartIntoUserCart();
             if ($request->ajax()) {
                 return response()->json([
-                    'success' => true,
+                    'status' => true,
                     'message' => 'Login successful.',
                     //  'redirect_url' => route('dashboard'),
-                ]);
+                ], 200);
             }
 
             return redirect()->intended(route('dashboard', absolute: false));
@@ -34,7 +47,7 @@ class CheckoutController extends Controller
 
             if ($request->ajax()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'errors' => $e->errors(),
                 ], 422);
             }
@@ -95,8 +108,8 @@ class CheckoutController extends Controller
 
     private function createUser(Request $request): User
     {
-        if (auth()->check()) {
-            return auth()->user();
+        if (Auth::check()) {
+            return Auth::user();
         }
 
         $validated = $request->validate([
@@ -116,6 +129,7 @@ class CheckoutController extends Controller
 
         event(new Registered($user));
         Auth::login($user);
+        CartFacade::mergeGuestCartIntoUserCart();
 
         return $user;
     }
@@ -132,7 +146,7 @@ class CheckoutController extends Controller
             'billing_phone' => 'required|string',
         ]);
 
-        return UserAddress::create([
+        return Address::create([
             'user_id' => $userId,
             'type' => 'billing',
             'first_name' => $data['billing_first_name'],
@@ -157,7 +171,7 @@ class CheckoutController extends Controller
             'shipping_phone' => 'required|string',
         ]);
 
-        return UserAddress::create([
+        return Address::create([
             'user_id' => $userId,
             'type' => 'shipping',
             'first_name' => $data['shipping_first_name'],
@@ -178,7 +192,7 @@ class CheckoutController extends Controller
             'shipping_address_id' => $shipping->id,
             'status' => 'pending',
             'notes' => request('order_notes'),
-            'total' => cartTotal(),
+            'total' => $this->cart->total(),
         ]);
     }
 

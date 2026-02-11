@@ -7,18 +7,18 @@ use Illuminate\View\Component;
 class AddToCart extends Component
 {
     public $cartQty;
-    public $productId;
+    public $product;
     public $qty;
     public $isSingle;
 
     public function __construct(
         $cartQty = 0,
-        $productId,
+        $product,
         $qty = 1,
         $isSingle = false
     ) {
         $this->cartQty = $cartQty;
-        $this->productId = $productId;
+        $this->product = $product;
         $this->qty = $qty;
         $this->isSingle = $isSingle;
     }

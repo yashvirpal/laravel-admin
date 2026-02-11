@@ -17,6 +17,7 @@ class Product extends Model
         'regular_price',
         'sale_price',
         'stock',
+        'has_variants',
         'short_description',
         'description',
         'banner',
@@ -44,7 +45,7 @@ class Product extends Model
 
     public function author()
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(Admin::class, 'author_id');
     }
 
     public function brand()
@@ -72,7 +73,17 @@ class Product extends Model
         );
     }
 
+    // Variants
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
 
+    // Attributes assigned to product
+    public function attributes()
+    {
+        return $this->belongsToMany(ProductAttribute::class, 'product_product_attribute');
+    }
     public function galleries()
     {
         return $this->hasMany(ProductGallery::class)->orderBy('sort_order');
@@ -82,6 +93,12 @@ class Product extends Model
     {
         return $this->hasOne(ProductGallery::class)->where('is_default', true);
     }
+
+    public function faqs()
+    {
+        return $this->hasMany(ProductFaq::class);
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -162,6 +179,43 @@ class Product extends Model
         ) as is_wishlisted',
             [self::class, $userId]
         );
+    }
+
+
+
+    public function getTypeAttribute()
+    {
+        return $this->has_variants ? 'Variable' : 'Simple';
+    }
+
+
+    public function isVariable()
+    {
+        return $this->variants()->exists();
+    }
+
+    public function minVariantPrice()
+    {
+        return $this->variants()->min(\DB::raw('COALESCE(sale_price, regular_price)'));
+    }
+
+    public function maxVariantPrice()
+    {
+        return $this->variants()->max(\DB::raw('COALESCE(sale_price, regular_price)'));
+    }
+
+
+    public function category()
+    {
+        return $this->categories()->first();
+    }
+
+    /**
+     * Get primary category ID
+     */
+    public function getCategoryIdAttribute()
+    {
+        return $this->categories->first()?->id;
     }
 
 

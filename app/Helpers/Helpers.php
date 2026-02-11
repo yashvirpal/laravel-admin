@@ -36,15 +36,22 @@ if (!function_exists('dateFormat')) {
         if (!$date)
             return null;
 
-        $dt = Carbon::parse($date);
+        // If already Carbon, use it directly
+        $dt = $date instanceof \Carbon\Carbon
+            ? $date
+            : \Carbon\Carbon::parse($date);
 
-        // Show time only if it's not 00:00:00
-        if ($dt->format('H:i:s') != '00:00:00') {
+        // Convert to app timezone BEFORE formatting
+        $dt = $dt->timezone(config('app.timezone'));
+
+        // Show time only if it's not midnight
+        if ($dt->format('H:i:s') !== '00:00:00') {
             return $dt->format('d M Y H:i');
         }
 
         return $dt->format('d M Y');
     }
+
 }
 
 if (!function_exists('flashMessage')) {
@@ -160,5 +167,20 @@ if (!function_exists('image_url')) {
         return asset('storage/' . trim($sizeFolder, '/') . '/' . $filename);
     }
 }
+
+if (!function_exists('cart')) {
+    function cart()
+    {
+        return app(\App\Services\CartService::class);
+    }
+}
+
+if (!function_exists('wishlist')) {
+    function wishlist()
+    {
+        return app(\App\Services\WishlistService::class);
+    }
+}
+
 
 
