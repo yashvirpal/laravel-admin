@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.card-hover {
+    transition: all .3s ease;
+}
+
+.card-hover:hover {
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, .15) !important;
+    transform: translateY(-6px);
+}

@@ -51,7 +51,7 @@
                                     </li>
                                     <li>
                                         @if (Auth::check())
-                                            <a href="{{ route('dashboard') }}">
+                                            <a href="{{ route('profile.dashboard') }}">
                                                 <i class="fas fa-user"></i>
                                             </a>
                                         @else

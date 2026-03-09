@@ -9,15 +9,15 @@
     <!-- checkout page section start here -->
     <section class="cart-page-sec">
         <div class="container">
-            {{ auth()->user() }}
-            <form class="py-6" accept="{{ route('createOrder') }}" id="checkoutForm">
+            {{-- <x-frontend.checkout-coupon /> --}}
+            <form class="py-6" action="{{ route('checkout.process') }}" id="checkoutForm">
                 <div class="row g-4 ">
                     @if ($cart->items->count() > 0)
 
                         <div class="col-lg-6">
-                            {{-- <x-frontend.checkout-login /> --}}
-                            {{-- <x-frontend.checkout-coupon /> --}}
-                            <x-frontend.checkout-register />
+                            <x-frontend.checkout-login />
+                            <x-frontend.checkout-register :billingAddress="$billingAddress"
+                                :shippingAddress="$shippingAddress" />
                         </div>
 
                         <!-- ORDER SUMMARY -->

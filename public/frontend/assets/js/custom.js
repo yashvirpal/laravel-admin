@@ -377,9 +377,15 @@ function toggleContent(contentId, arrowId) {
   const content = document.getElementById(contentId);
   const arrow = document.getElementById(arrowId);
 
-  content.classList.toggle("active");
-  arrow.classList.toggle("rotate");
+  if (content) {
+    content.classList.toggle("active");
+  }
+
+  if (arrow) {
+    arrow.classList.toggle("rotate");
+  }
 }
+
 
 
 

@@ -104,6 +104,37 @@ if (!function_exists('status_badge')) {
         return new HtmlString("<span class='badge bg-{$color}'>{$label}</span>");
     }
 }
+
+
+if (!function_exists('paymentStatusBadge')) {
+
+    function paymentStatusBadge($status)
+    {
+        return match ($status) {
+            'pending' => [
+                'class' => 'bg-warning text-dark',
+                'icon'  => 'fa-hourglass-half',
+                'text'  => 'Pending',
+            ],
+            'completed' => [
+                'class' => 'bg-success',
+                'icon'  => 'fa-check',
+                'text'  => 'Completed',
+            ],
+            'cancelled' => [
+                'class' => 'bg-danger',
+                'icon'  => 'fa-times',
+                'text'  => 'Cancelled',
+            ],
+            default => [
+                'class' => 'bg-secondary',
+                'icon'  => 'fa-circle',
+                'text'  => ucfirst($status),
+            ],
+        };
+    }
+}
+
 if (!function_exists('setting')) {
     function setting($key, $default = null)
     {
@@ -120,10 +151,17 @@ if (!function_exists('enabledPaymentGateways')) {
     }
 }
 if (!function_exists('enabledShippingMethods')) {
+    // function enabledShippingMethods()
+    // {
+    //     return collect(json_decode(setting('shipping_methods') ?? '{}', true))
+    //         ->filter(fn($g) => isset($g['enabled']) && (int) $g['enabled'] === 1);
+    // }
     function enabledShippingMethods()
     {
         return collect(json_decode(setting('shipping_methods') ?? '{}', true))
-            ->filter(fn($g) => isset($g['enabled']) && (int) $g['enabled'] === 1);
+            ->filter(fn($g) => isset($g['enabled']) && (int) $g['enabled'] === 1)
+            ->reverse();
+            //->values(); // optional: reindex keys
     }
 }
 if (!function_exists('labelFromKey')) {

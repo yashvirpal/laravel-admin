@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
                 'city' => 'Cityville',
                 'state' => 'Stateville',
                 'country' => 'Countryland',
-                'postal_code' => '12345',
+                'zip' => '123456',
                 'phone' => '1234567890',
                 'status' => true,
             ]);
@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
                 'city' => 'Townsville',
                 'state' => 'Stateville',
                 'country' => 'Countryland',
-                'postal_code' => '67890',
+                'zip' => '678900',
                 'phone' => '0987654321',
                 'status' => true,
             ]);
@@ -69,7 +69,7 @@ class UserSeeder extends Seeder
                 'city' => fake()->city(),
                 'state' => fake()->state(),
                 'country' => fake()->country(),
-                'postal_code' => fake()->postcode(),
+                'zip' => fake()->postcode(),
                 'phone' => fake()->phoneNumber(),
                 'status' => 1,
             ]);
@@ -82,7 +82,7 @@ class UserSeeder extends Seeder
                 'city' => fake()->city(),
                 'state' => fake()->state(),
                 'country' => fake()->country(),
-                'postal_code' => fake()->postcode(),
+                'zip' => fake()->postcode(),
                 'phone' => fake()->phoneNumber(),
                 'status' => 1,
             ]);

@@ -63,18 +63,22 @@
                 cartUpdate: @json(route('cart.update', ':id')),
                 cartRemove: @json(route('cart.remove', ':id')),
                 cartMini: @json(route('cart.mini')),
-             
+
                 checkout: @json(route('page', 'checkout')),
                 wishlistToggle: @json(route('wishlist.toggle', ':id')),
                 wishlistCount: @json(route('wishlist.count')),
+
+                'checkout.shipping': '{{ route("checkout.shipping") }}',
+                'checkout.process': '{{ route("checkout.process") }}',
+             //   'products.process': '{{ route("page","shop") }}',
 
             }
         };
     </script>
     {{-- Stack Script
-     //  cartProductQty: @json(route('cart.productQty', ':id')),
-    
-    
+    // cartProductQty: @json(route('cart.productQty', ':id')),
+
+
     --}}
     @stack('scripts')
 </body>

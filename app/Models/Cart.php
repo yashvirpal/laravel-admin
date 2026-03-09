@@ -31,6 +31,14 @@ class Cart extends Model
         'grand_total' => 'decimal:2',
     ];
 
+    protected $attributes = [
+        'subtotal' => 0,
+        'discount_total' => 0,
+        'tax_rate' => 0,
+        'tax_total' => 0,
+        'shipping_total' => 0,
+        'grand_total' => 0,
+    ];
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -39,12 +47,6 @@ class Cart extends Model
     public function items(): HasMany
     {
         return $this->hasMany(CartItem::class);
-    }
-
-    public function coupons_old(): BelongsToMany
-    {
-        return $this->belongsToMany(Coupon::class, 'cart_coupons')
-            ->withTimestamps();
     }
 
     public function coupons(): BelongsToMany
@@ -59,14 +61,14 @@ class Cart extends Model
     public function calculateTotals(): void
     {
         $this->subtotal = $this->items->sum(fn($item) => $item->price * $item->quantity);
-        
+
         // Tax calculation (after discount)
         $taxableAmount = $this->subtotal - $this->discount_total;
         $this->tax_total = ($taxableAmount * $this->tax_rate) / 100;
-        
+
         // Grand total
         $this->grand_total = $this->subtotal - $this->discount_total + $this->tax_total + $this->shipping_total;
-        
+
         $this->save();
     }
 }

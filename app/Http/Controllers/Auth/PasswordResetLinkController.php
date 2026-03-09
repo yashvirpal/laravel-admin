@@ -17,7 +17,8 @@ class PasswordResetLinkController extends Controller
      */
     public function create(): View
     {
-        return view('auth.forgot-password');
+        return view('frontend.auth.forgot-password');
+        //return view('auth.forgot-password');
     }
 
     /**
@@ -74,6 +75,7 @@ class PasswordResetLinkController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Something went wrong. Please try again later.',
+                    'error'=>$e->getMessage(),
                 ], 500);
             }
 

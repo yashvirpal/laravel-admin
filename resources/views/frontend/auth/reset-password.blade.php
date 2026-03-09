@@ -20,24 +20,25 @@
                                     Create a new password for your account.
                                 </p>
 
-                                <form method="POST" action="{{ route('password.update') }}" id="resetPasswordForm">
+                                <form method="POST" action="{{ route('password.store') }}" id="resetPasswordForm">
                                     @csrf
 
                                     <!-- Required by Laravel -->
                                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
-                                    <input type="hidden" name="email" value="{{ old('email', $request->email) }}">
+                                    <input type="hidden" name="email"
+                                        value="{{ old('email', $request->ue ? decrypt($request->ue) : '') }}">
 
                                     <div class="login-form-group">
                                         <label for="password">New Password</label>
                                         <input type="password" name="password" id="password"
-                                            placeholder="Minimum 8 characters" autocomplete="new-password">
+                                            placeholder="Minimum 8 characters" autocomplete="off">
                                         <small class="text-danger error_password error"></small>
                                     </div>
 
                                     <div class="login-form-group">
                                         <label for="password_confirmation">Confirm Password</label>
                                         <input type="password" name="password_confirmation" id="password_confirmation"
-                                            placeholder="Confirm password" autocomplete="new-password">
+                                            placeholder="Confirm Password" autocomplete="off">
                                         <small class="text-danger error_password_confirmation error"></small>
                                     </div>
 
@@ -76,7 +77,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const rules = [
                 { selector: "#password", rule: "password" },
-                { selector: "#password_confirmation", rule: "confirm_password" }
+                { selector: "#password_confirmation", rule: "password_confirmation" }
             ];
 
             setTimeout(() => {

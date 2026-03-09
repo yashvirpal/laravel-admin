@@ -31,13 +31,14 @@ return new class extends Migration {
             $table->enum('type', ['billing', 'shipping']); // Address type
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
+            $table->string('company')->nullable();
             $table->string('address_line1')->nullable();
             $table->string('address_line2')->nullable();
             $table->string('phone')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('country')->nullable();
-            $table->string('postal_code')->nullable();
+            $table->string('zip')->nullable();
             $table->boolean('status')->default(true)->default(1)->comment('Active/Inactive');
             $table->boolean('is_default')->default(true)->default(1);
             $table->timestamps();

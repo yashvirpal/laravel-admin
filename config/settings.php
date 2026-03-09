@@ -53,6 +53,7 @@ return [
         'category' => 'shop',
         'auth' => 'Auth',
         'search' => 'Search',
+        'thankyou'=>"Thankyou"
     ],
 
     'global_section_templates' => [

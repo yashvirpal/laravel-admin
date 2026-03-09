@@ -113,6 +113,7 @@ class HomeController extends Controller
 
     public function page($slug)
     {
+        
         $page = Page::where('slug', $slug)->first();
         if (!$page) {
             return response()->view('frontend.404', [], 404);
@@ -126,10 +127,25 @@ class HomeController extends Controller
                     auth()->id(),
                     session()->getId()
                 );
+                // Get user's default addresses if logged in
+                $billingAddress = null;
+                $shippingAddress = null;
+
+                if (auth()->check()) {
+                    $billingAddress = auth()->user()->addresses()
+                        ->where('type', 'billing')
+                        ->where('is_default', true)
+                        ->first();
+
+                    $shippingAddress = auth()->user()->addresses()
+                        ->where('type', 'shipping')
+                        ->where('is_default', true)
+                        ->first();
+                }
 
                 //  $addresses = Auth::user()->addresses()->latest()->get();
                 // dd($addresses);
-                return view("frontend.$template", compact('page', 'cart'));
+                return view("frontend.$template", compact('page', 'cart', 'billingAddress', 'shippingAddress'));
             } else if ($page->template == "wishlist") {
                 $wishlists = Wishlist::with('wishlistable')->where('user_id', Auth::id())->latest()->get();
                 return view("frontend.$template", compact('page', 'wishlists'));
@@ -144,8 +160,9 @@ class HomeController extends Controller
             } else {
                 if ($template == 'auth') {
                     if (Auth::check()) {
-                        return redirect(route('dashboard', absolute: false));
+                        return redirect(route('profile.dashboard', absolute: false));
                     }
+                   
                     return view("frontend.$template.$page->slug", compact('page'));
                 }
                 return view("frontend.$template", compact('page'));

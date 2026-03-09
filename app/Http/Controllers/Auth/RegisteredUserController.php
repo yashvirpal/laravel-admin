@@ -14,6 +14,9 @@ use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 
+use Illuminate\Support\Facades\Mail;
+
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -21,7 +24,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        //return view('auth.register');
+        return view('frontend.auth.register');
     }
 
     /**
@@ -57,17 +61,19 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
+            Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+
             //  AJAX Response
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Account created successfully.',
-                    'redirect_url' => route('dashboard'),
+                    'redirect_url' => route('profile.dashboard'),
                 ], 200);
             }
 
             //  Normal Redirect
-            return redirect()->route('dashboard');
+            return redirect()->route('profile.dashboard');
 
         } catch (ValidationException $e) {
 
@@ -82,12 +88,13 @@ class RegisteredUserController extends Controller
             throw $e;
 
         } catch (\Exception $e) {
-
+            \Log::error('Registration error: ' . $e->getMessage());
             //  Any other error
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Something went wrong. Please try again.',
+                    'errors' => $e->getMessage(),
                 ], 500);
             }
 

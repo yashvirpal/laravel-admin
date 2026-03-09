@@ -19,7 +19,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('frontend.auth.login');
+        //return view('auth.login');
     }
 
     /**
@@ -92,11 +93,11 @@ class AuthenticatedSessionController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Login successful.',
-                    'redirect_url' => route('dashboard'),
+                    'redirect_url' => route('profile.dashboard'),
                 ]);
             }
 
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('profile.dashboard', absolute: false));
 
         } catch (ValidationException $e) {
             if ($request->ajax()) {
@@ -109,49 +110,7 @@ class AuthenticatedSessionController extends Controller
             throw $e;
         }
     }
-    // public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
-    // {
-    //     try {
-    //         $request->authenticate(); // handles email + password
-    //         $request->session()->regenerate();
-
-    //         if ($request->ajax()) {
-    //             return response()->json([
-    //                 'success' => true,
-    //                 'message' => 'Login successful.',
-    //                 'redirect_url' => route('dashboard'),
-    //             ]);
-    //         }
-
-
-
-    //         return redirect()->intended(route('dashboard', absolute: false));
-
-    //     } catch (ValidationException $e) {
-
-    //         if ($request->ajax()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'errors' => $e->errors(),
-    //             ], 422);
-    //         }
-
-    //         throw $e;
-    //     }
-    // }
-
-    // public function store(LoginRequest $request): RedirectResponse
-    // {
-    //     $request->authenticate();
-
-    //     $request->session()->regenerate();
-
-    //     return redirect()->intended(route('dashboard', absolute: false));
-    // }
-
-    /**
-     * Destroy an authenticated session.
-     */
+    
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

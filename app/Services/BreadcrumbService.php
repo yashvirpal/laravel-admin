@@ -21,8 +21,14 @@ class BreadcrumbService
         // Home (always first)
         $crumbs[] = [
             'label' => 'Home',
-            'url'   => url('/'),
+            'url' => url('/'),
         ];
+        if (request()->routeIs('profile*')) {
+            $crumbs[] = [
+                'label' => 'My Account',
+                'url' => url('/'),
+            ];
+        }
 
         $route = request()->route();
         $params = $route?->parameters() ?? [];
@@ -34,7 +40,7 @@ class BreadcrumbService
         if (isset($params['categories'])) {
             // categories can be nested path — take last segment as the slug
             $parts = explode('/', trim($params['categories'], '/'));
-            $slug  = end($parts);
+            $slug = end($parts);
 
             $category = ProductCategory::where('slug', $slug)->first();
             if ($category) {
@@ -66,7 +72,7 @@ class BreadcrumbService
                 // finally append product itself
                 $crumbs[] = [
                     'label' => $product->title ?? $product->name ?? 'Product',
-                    'url'   => route('products.details', $product->slug),
+                    'url' => route('products.details', $product->slug),
                 ];
             }
 
@@ -82,7 +88,7 @@ class BreadcrumbService
             if ($page) {
                 $crumbs[] = [
                     'label' => $page->title,
-                    'url'   => url()->current(),
+                    'url' => url()->current(),
                 ];
             }
 
@@ -115,7 +121,7 @@ class BreadcrumbService
         if (request()->routeIs('search')) {
             $crumbs[] = [
                 'label' => 'Search',
-                'url'   => url()->current(),
+                'url' => url()->current(),
             ];
             return $crumbs;
         }
