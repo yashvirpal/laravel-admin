@@ -84,7 +84,7 @@ Route::prefix('blog')->group(function () {
 });
 //Route::post('/products/filter', [ProductController::class, 'filter'])->name('products.filter');
 Route::get('/wishlistcount', [WishlistController::class, 'count'])->name('wishlist.count');
-
+Route::post('/add-review', [HomeController::class, 'AddReview'])->name('add.review');
 
 Route::post('/checkout/login', [CheckoutController::class, 'login'])->name('checkoutLogin');
 Route::post('/checkout/create-order', [CheckoutController::class, 'checkOut'])->name('createOrder');
@@ -95,6 +95,7 @@ Route::post('/newsletter/subscribe', [HomeController::class, 'newsletterSubscrib
 Route::get('/sitemap.xml', [HomeController::class, 'sitemapXML'])->name('sitemapxml');
 
 Route::get('/api/geo/country', [GeoLocationController::class, 'getCountry'])->name('api.geo.country');
+
 
 
 

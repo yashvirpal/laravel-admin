@@ -218,5 +218,15 @@ class Product extends Model
         return $this->categories->first()?->id;
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class)->latest();
+    }
+
+    public function getAvgRatingAttribute()
+    {
+        return $this->reviews()->avg('rating');
+    }
+
 
 }

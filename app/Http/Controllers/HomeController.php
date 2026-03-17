@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Page;
 use App\Models\Slider;
 use App\Models\ProductCategory;
+use App\Models\ProductReview;
 use App\Models\Product;
 use App\Models\GlobalSection;
 use App\Models\Wishlist;
@@ -113,7 +114,7 @@ class HomeController extends Controller
 
     public function page($slug)
     {
-        
+
         $page = Page::where('slug', $slug)->first();
         if (!$page) {
             return response()->view('frontend.404', [], 404);
@@ -162,7 +163,7 @@ class HomeController extends Controller
                     if (Auth::check()) {
                         return redirect(route('profile.dashboard', absolute: false));
                     }
-                   
+
                     return view("frontend.$template.$page->slug", compact('page'));
                 }
                 return view("frontend.$template", compact('page'));
@@ -242,7 +243,7 @@ class HomeController extends Controller
     public function productDetails($slug)
     {
 
-        $product = Product::active()->with(['categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])->where('slug', $slug)->firstOrFail();
+        $product = Product::active()->with(['reviews', 'categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])->where('slug', $slug)->firstOrFail();
 
 
         $categoryIds = $product->categories->pluck('id');
@@ -599,6 +600,59 @@ class HomeController extends Controller
             'stock' => $variant->stock ?? 0,
             'sku' => $variant->sku
         ]);
+    }
+
+
+    public function AddReview(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $exists = ProductReview::where('product_id', $request->product_id)
+            ->where('email', $request->email)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You already reviewed this product'
+            ], 400);
+        }
+        try {
+
+            $review = ProductReview::create([
+                'product_id' => $request->product_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'rating' => $request->rating,
+                'review' => $request->review,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Review added successfully!',
+                'data' => $review
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 }

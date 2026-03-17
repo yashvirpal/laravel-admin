@@ -227,6 +227,16 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        Schema::create('product_reviews', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->string('email');
+            $table->integer('rating'); // 1 to 5
+            $table->text('review');
+            $table->timestamps();
+        });
+
     }
 
     public function down(): void

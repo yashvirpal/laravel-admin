@@ -22,6 +22,29 @@
         </h4>
         <x-frontend.price :item="$item" />
         <div class="product-rating">
+            <div class="rating-starss d-inline-flex flex-row" style="font-size: 13px;">
+                @php
+                    $rating = min(5, max(0, $item->avg_rating ?? 0));
+                    $full = (int) floor($rating);
+                    $half = (($rating - $full) >= 0.5) ? 1 : 0;
+                    $empty = 5 - $full - $half;
+                @endphp
+
+                @for($i = 0; $i < $full; $i++)
+                    <i class="fa fa-star text-warning"></i>
+                @endfor
+
+                @if($half)
+                    <i class="fas fa-star-half-alt text-warning"></i>
+                @endif
+
+                @for($i = 0; $i < $empty; $i++)
+                    <i class="fa fa-star text-secondary"></i>
+                @endfor
+            </div>
+            <span class="rating-count">({{ $item->reviews->count() }} Reviews)</span>
+        </div>
+        <!-- <div class="product-rating">
             <div class="rating-stars">
                 <i class="fa fa-star"></i>
                 <i class="fa fa-star"></i>
@@ -30,6 +53,6 @@
                 <i class="fa fa-star"></i>
             </div>
             <span class="rating-count">(22 Reviews)</span>
-        </div>
+        </div> -->
     </div>
 </div>
