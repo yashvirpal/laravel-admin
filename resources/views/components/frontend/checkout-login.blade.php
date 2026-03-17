@@ -8,11 +8,12 @@
         </div>
 
         <div id="loginContent" class="expandable-content">
-            <p style="color:#666;margin-bottom:20px;">
+            <!-- <p style="color:#666;margin-bottom:20px;">
                 If you didn't log in, please log in first.
-            </p>
+            </p> -->
 
-            <form action="{{ route('checkoutLogin') }}" id="checkoutLoginForm">
+            <form action="{{ route('checkoutLogin') }}" id="checkoutLoginForm" method="post"
+                class="d-flex flex-wrap justify-between align-items-center gap-2">
                 <div class="input-field">
                     <label>Email</label>
                     <input type="email" name="email" id="login_email" placeholder="Enter your email">
@@ -24,11 +25,13 @@
                     <input type="password" name="password" id="login_password" placeholder="Enter your password">
                     <small class="text-danger error_password error"></small>
                 </div>
-                <span class="my-1 msg"></span>
-                <button type="submit" class="submit-buttonn btn mybtn">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
+                <div class="">
+                    <button type="submit" class="submit-buttonn btn mybtn">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </div>
             </form>
+          
         </div>
     </div>
 @endguest

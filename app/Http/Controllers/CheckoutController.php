@@ -148,6 +148,7 @@ class CheckoutController extends Controller
                 return response()->json([
                     'status' => true,
                     'message' => 'Login successful.',
+                    'redirect_url'=>route('page','checkout'),
                 ], 200);
             }
 
