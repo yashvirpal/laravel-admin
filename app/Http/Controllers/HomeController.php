@@ -478,7 +478,7 @@ class HomeController extends Controller
         }
     }
 
-    public function load(Request $request)
+    public function loadd(Request $request)
     {
 
         $query = Product::query()->stock()->active();
@@ -551,6 +551,104 @@ class HomeController extends Controller
         // $products = Product::active()->stock()->paginate(12);
         //  $products = $this->cart->attachCartQtyToProducts($products);
         // $products = $this->wishlist->attachWishlistFlag($products);
+        try {
+            return response()->json([
+                'html' => view('components.frontend.product-list', compact('products'))->render(),
+                'count' => $products->count(),
+                'hasMore' => $products->hasMorePages(),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    }
+    public function load(Request $request)
+    {
+        $query = Product::query()->stock()->active();
+
+        // Category filter
+        if (!empty($request->categories) && is_array($request->categories) && count($request->categories) > 0) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->whereIn('product_categories.id', $request->categories);
+            });
+        }
+
+        // Price filter
+        $minPrice = filled($request->min_price) ? (float) $request->min_price : null;
+        $maxPrice = filled($request->max_price) ? (float) $request->max_price : null;
+
+        if ($minPrice !== null) {
+            $query->where(function ($q) use ($minPrice) {
+                $q->where(function ($inner) use ($minPrice) {
+                    $inner->whereNotNull('sale_price')
+                        ->where('sale_price', '>=', $minPrice);
+                })->orWhere(function ($inner) use ($minPrice) {
+                    $inner->whereNull('sale_price')
+                        ->where('regular_price', '>=', $minPrice);
+                });
+            });
+        }
+
+        if ($maxPrice !== null) {
+            $query->where(function ($q) use ($maxPrice) {
+                $q->where(function ($inner) use ($maxPrice) {
+                    $inner->whereNotNull('sale_price')
+                        ->where('sale_price', '<=', $maxPrice);
+                })->orWhere(function ($inner) use ($maxPrice) {
+                    $inner->whereNull('sale_price')
+                        ->where('regular_price', '<=', $maxPrice);
+                });
+            });
+        }
+
+        // Rating filter
+        $rating = filled($request->rating) ? (float) $request->rating : null;
+
+        // if ($rating !== null && $rating > 0) {
+        //     $query->whereIn('id', function ($q) use ($rating) {
+        //         $q->select('product_id')
+        //             ->from('product_reviews')
+        //             ->groupBy('product_id')
+        //             ->havingRaw('AVG(rating) >= ?', [$rating]);
+        //     });
+        // }
+        if ($rating !== null && $rating > 0) {
+            $query->whereIn('id', function ($q) use ($rating) {
+                $q->select('product_id')
+                    ->from('product_reviews')
+                    ->groupBy('product_id')
+                    ->havingRaw('CAST(AVG(rating) AS FLOAT) >= ?', [$rating]);
+            });
+        }
+
+        // Sorting
+        switch ($request->sort) {
+            case 'popular':
+                $query->orderBy('views', 'desc');
+                break;
+            case 'name-asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'name-desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'price-low':
+                $query->orderByRaw('COALESCE(sale_price, regular_price) ASC');
+                break;
+            case 'price-high':
+                $query->orderByRaw('COALESCE(sale_price, regular_price) DESC');
+                break;
+            default:
+                $query->latest();
+                break;
+        }
+
+        $products = $query->paginate(12, ['*'], 'page', $request->page);
+
         try {
             return response()->json([
                 'html' => view('components.frontend.product-list', compact('products'))->render(),
