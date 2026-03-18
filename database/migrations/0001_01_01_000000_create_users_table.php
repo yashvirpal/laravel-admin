@@ -39,8 +39,8 @@ return new class extends Migration {
             $table->string('state')->nullable();
             $table->string('country')->nullable();
             $table->string('zip')->nullable();
-            $table->boolean('status')->default(true)->default(1)->comment('Active/Inactive');
-            $table->boolean('is_default')->default(true)->default(1);
+            $table->boolean('status')->default(1)->comment('Active/Inactive');
+            $table->boolean('is_default')->default(0);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

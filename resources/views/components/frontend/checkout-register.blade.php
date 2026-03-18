@@ -1,9 +1,12 @@
 <!-- Billing Details -->
 <div class="billing-section">
-    <h4 class="section-header">
+    <h5 class="section-header">
         <i class="fas fa-file-invoice"></i> Billing Details
-    </h4>
+    </h5>
     <div class="row">
+
+        <input type="hidden" name="billing_id" value="{{ old('billing_id', $billingAddress->id ?? '')}}" />
+        <input type="hidden" name="shipping_id" value="{{ old('shipping_id', $shippingAddress->id ?? '')}}" />
         <div class="col-md-6">
             <div class="input-field">
                 <label>First Name <span class="required-star">*</span></label>
@@ -72,15 +75,14 @@
 
     <!-- Different Shipping -->
     <div class="notification-card" style="margin-top: 25px;">
-        <div class="checkbox-group" style="margin: 0;">
-            {{-- <input type="checkbox" name="differentShipping" id="differentShipping" value="1"> --}}
+        <div class="checkbox-group d-none" style="margin: 0;">
 
             <input type="checkbox" name="differentShipping" id="differentShipping"
                 onclick="toggleContent('shippingContent')">
             <label for="differentShipping">Ship to a different address?</label>
         </div>
-        <div id="shippingContent" class="expandable-content">
-
+        <div id="shippingContent" class="expandable-content active">
+            <h5 class="section-header"> <i class="fas fa-shipping-fast"></i> Shipping Address </h5>
             <div class="row">
                 <div class="col-md-6">
                     <div class="input-field">
