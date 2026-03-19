@@ -3,127 +3,255 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PhonePeService
 {
-    private $merchantId;
-    private $saltKey;
-    private $saltIndex;
-    private $baseUrl;
+    private string $clientId;
+    private string $clientVersion;
+    private string $clientSecret;
+    private string $tokenUrl;
+    private string $baseUrl;
 
     public function __construct()
     {
-        $this->merchantId = config('services.phonepe.merchant_id');
-        $this->saltKey = config('services.phonepe.salt_key');
-        $this->saltIndex = config('services.phonepe.salt_index');
-        $this->baseUrl = config('services.phonepe.base_url');
+        $this->clientId      = config('services.phonepe.client_id');
+        $this->clientVersion = (string) config('services.phonepe.client_version', '1');
+        $this->clientSecret  = config('services.phonepe.client_secret');
+        $this->tokenUrl      = config('services.phonepe.token_url');
+        $this->baseUrl       = rtrim(config('services.phonepe.base_url'), '/');
     }
 
-    private function generateChecksum($payload, $endpoint)
+    // ─────────────────────────────────────────────
+    // 🔐 GET OAuth TOKEN
+    // ─────────────────────────────────────────────
+
+    private function getAccessToken(bool $forceRefresh = false): string
     {
-        return hash('sha256', $payload . $endpoint . $this->saltKey) . "###" . $this->saltIndex;
+        if ($forceRefresh) {
+            Cache::forget('phonepe_access_token');
+        }
+
+        return Cache::remember('phonepe_access_token', now()->addHours(23), function () {
+            $response = Http::withHeaders([
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ])
+                ->timeout(15)
+                ->asForm()
+                ->post($this->tokenUrl, [
+                    'client_id'      => $this->clientId,
+                    'client_version' => $this->clientVersion,
+                    'client_secret'  => $this->clientSecret,
+                    'grant_type'     => 'client_credentials',
+                ]);
+
+            Log::info('PhonePe OAuth response', [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            if (! $response->successful() || empty($response->json('access_token'))) {
+                throw new \Exception('PhonePe OAuth failed: ' . $response->body());
+            }
+
+            return $response->json('access_token');
+        });
     }
 
-    /**
-     * 🔹 CREATE PAYMENT
-     */
-    public function createOrder($amount, $userId, $redirectUrl, $callbackUrl)
+    // ─────────────────────────────────────────────
+    // 🔑 AUTH HEADERS
+    // ─────────────────────────────────────────────
+
+    private function authHeaders(bool $forceRefresh = false): array
     {
-        $transactionId = uniqid('txn_');
+        return [
+            'Content-Type'  => 'application/json',
+            'Authorization' => 'O-Bearer ' . $this->getAccessToken($forceRefresh),
+        ];
+    }
+
+    // ─────────────────────────────────────────────
+    // 🌐 MAKE AUTHENTICATED REQUEST (auto-retry on 401)
+    // ─────────────────────────────────────────────
+
+    private function makeRequest(string $method, string $endpoint, array $payload = []): \Illuminate\Http\Client\Response
+    {
+        $url = $this->baseUrl . $endpoint;
+
+        $response = Http::withHeaders($this->authHeaders())
+            ->timeout(30)
+            ->{$method}($url, $payload ?: null);
+
+        // ✅ If 401 — token expired, refresh once and retry
+        if ($response->status() === 401) {
+            Log::warning('PhonePe 401 — refreshing token and retrying', ['url' => $url]);
+
+            $response = Http::withHeaders($this->authHeaders(forceRefresh: true))
+                ->timeout(30)
+                ->{$method}($url, $payload ?: null);
+        }
+
+        return $response;
+    }
+
+    // ─────────────────────────────────────────────
+    // 💳 CREATE PAYMENT
+    // ─────────────────────────────────────────────
+
+    public function createOrder($amount, $userId, $redirectUrl, $callbackUrl = null): array
+    {
+        $merchantOrderId = 'txn_' . uniqid();
 
         $payload = [
-            "merchantId" => $this->merchantId,
-            "merchantTransactionId" => $transactionId,
-            "merchantUserId" => $userId,
-            "amount" => $amount * 100,
-            "redirectUrl" => $redirectUrl,
-            "redirectMode" => "POST",
-            "callbackUrl" => $callbackUrl,
-            "paymentInstrument" => [
-                "type" => "PAY_PAGE"
-            ]
+            'merchantOrderId' => $merchantOrderId,
+            'amount'          => (int) ($amount * 100),
+            'expireAfter'     => 1200,
+            'paymentFlow'     => [
+                'type'    => 'PG_CHECKOUT',
+                'message' => 'Order Payment',
+                'merchantUrls' => [
+                    'redirectUrl' => $redirectUrl,
+                ],
+            ],
         ];
 
-        $base64Payload = base64_encode(json_encode($payload));
-
-        $checksum = $this->generateChecksum($base64Payload, "/pg/v1/pay");
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'X-VERIFY' => $checksum,
-        ])->post($this->baseUrl . "/pg/v1/pay", [
-            "request" => $base64Payload
+        Log::info('PhonePe createOrder request', [
+            'url'     => $this->baseUrl . '/checkout/v2/pay',
+            'payload' => $payload,
         ]);
 
-        return [
-            'success' => $response->successful(),
-            'data' => $response->json(),
-            'transaction_id' => $transactionId
-        ];
+        try {
+            $response = $this->makeRequest('post', '/checkout/v2/pay', $payload);
+
+            Log::info('PhonePe createOrder response', [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            $redirectUrlFromPhonePe = $response->json('redirectUrl') ?? null;
+
+            return [
+                'success'        => $response->successful() && ! empty($redirectUrlFromPhonePe),
+                'data'           => $response->json(),
+                'redirect_url'   => $redirectUrlFromPhonePe,
+                'transaction_id' => $merchantOrderId,
+            ];
+
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('PhonePe connection failed', ['error' => $e->getMessage()]);
+
+            return [
+                'success'        => false,
+                'data'           => null,
+                'redirect_url'   => null,
+                'transaction_id' => $merchantOrderId,
+                'error'          => 'Connection failed: ' . $e->getMessage(),
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('PhonePe unexpected error', ['error' => $e->getMessage()]);
+
+            return [
+                'success'        => false,
+                'data'           => null,
+                'redirect_url'   => null,
+                'transaction_id' => $merchantOrderId,
+                'error'          => $e->getMessage(),
+            ];
+        }
     }
 
-    /**
-     * 🔹 CHECK STATUS (Use for verify / cancel logic)
-     */
-    public function checkStatus($transactionId)
+    // ─────────────────────────────────────────────
+    // 🔍 CHECK ORDER STATUS
+    // ─────────────────────────────────────────────
+
+    public function checkStatus(string $merchantOrderId): array
     {
-        $endpoint = "/pg/v1/status/{$this->merchantId}/{$transactionId}";
+        Log::info('PhonePe checkStatus', ['transaction_id' => $merchantOrderId]);
 
-        $checksum = hash('sha256', $endpoint . $this->saltKey) . "###" . $this->saltIndex;
+        try {
+            $response = $this->makeRequest('get', '/checkout/v2/order/' . $merchantOrderId . '/status');
 
-        $response = Http::withHeaders([
-            'X-VERIFY' => $checksum,
-        ])->get($this->baseUrl . $endpoint);
+            Log::info('PhonePe checkStatus response', [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
 
-        return $response->json();
+            return $response->json() ?? [];
+
+        } catch (\Exception $e) {
+            Log::error('PhonePe checkStatus error', ['error' => $e->getMessage()]);
+            return ['state' => 'FAILED', 'error' => $e->getMessage()];
+        }
     }
 
-    /**
-     * 🔹 REFUND PAYMENT
-     */
-    public function refund($transactionId, $refundAmount)
+    // ─────────────────────────────────────────────
+    // 💸 INITIATE REFUND
+    // ─────────────────────────────────────────────
+
+    public function refund(string $merchantOrderId, $refundAmount): array
     {
-        $refundId = uniqid('refund_');
+        $merchantRefundId = 'refund_' . uniqid();
 
         $payload = [
-            "merchantId" => $this->merchantId,
-            "merchantTransactionId" => $transactionId,
-            "merchantRefundId" => $refundId,
-            "amount" => $refundAmount * 100,
-            "callbackUrl" => route('phonepe.refund.callback'),
+            'merchantRefundId' => $merchantRefundId,
+            'merchantOrderId'  => $merchantOrderId,
+            'amount'           => (int) ($refundAmount * 100),
         ];
 
-        $base64Payload = base64_encode(json_encode($payload));
-
-        $checksum = $this->generateChecksum($base64Payload, "/pg/v1/refund");
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'X-VERIFY' => $checksum,
-        ])->post($this->baseUrl . "/pg/v1/refund", [
-            "request" => $base64Payload
+        Log::info('PhonePe refund request', [
+            'url'     => $this->baseUrl . '/checkout/v2/refund',
+            'payload' => $payload,
         ]);
 
-        return [
-            'success' => $response->successful(),
-            'data' => $response->json(),
-            'refund_id' => $refundId
-        ];
+        try {
+            $response = $this->makeRequest('post', '/checkout/v2/refund', $payload);
+
+            Log::info('PhonePe refund response', [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            return [
+                'success'   => $response->successful(),
+                'data'      => $response->json(),
+                'refund_id' => $merchantRefundId,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('PhonePe refund error', ['error' => $e->getMessage()]);
+
+            return [
+                'success'   => false,
+                'data'      => null,
+                'refund_id' => $merchantRefundId,
+                'error'     => $e->getMessage(),
+            ];
+        }
     }
 
-    /**
-     * 🔹 CHECK REFUND STATUS
-     */
-    public function refundStatus($refundId)
+    // ─────────────────────────────────────────────
+    // 🔍 CHECK REFUND STATUS
+    // ─────────────────────────────────────────────
+
+    public function refundStatus(string $merchantRefundId): array
     {
-        $endpoint = "/pg/v1/refund/status/{$this->merchantId}/{$refundId}";
+        try {
+            $response = $this->makeRequest('get', '/checkout/v2/refund/' . $merchantRefundId . '/status');
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            Log::error('PhonePe refundStatus error', ['error' => $e->getMessage()]);
+            return ['error' => $e->getMessage()];
+        }
+    }
 
-        $checksum = hash('sha256', $endpoint . $this->saltKey) . "###" . $this->saltIndex;
+    // ─────────────────────────────────────────────
+    // 🔄 FORCE REFRESH TOKEN
+    // ─────────────────────────────────────────────
 
-        $response = Http::withHeaders([
-            'X-VERIFY' => $checksum,
-        ])->get($this->baseUrl . $endpoint);
-
-        return $response->json();
+    public function refreshToken(): void
+    {
+        $this->getAccessToken(forceRefresh: true);
     }
 }

@@ -245,7 +245,7 @@ class CheckoutController extends Controller
             callbackUrl: route('payment.webhook')
         );
 
-        $redirectUrl = $response['data']['data']['instrumentResponse']['redirectInfo']['url'] ?? null;
+        $redirectUrl = $response['redirect_url'] ?? null;
 
         if (!$response['success'] || !$redirectUrl) {
             Log::error('PhonePe payment initiation failed', [
@@ -261,17 +261,40 @@ class CheckoutController extends Controller
             ], 500);
         }
 
-        $order->update([
-            'transaction_id' => $response['transaction_id'],
-            'payment_status' => 'initiated',
-        ]);
+        // ✅ Use DB::transaction to guarantee the save
+        DB::transaction(function () use ($order, $response) {
+            $updated = DB::table('orders')
+                ->where('id', $order->id)
+                ->update([
+                    'transaction_id' => $response['transaction_id'],
+                    'payment_status' => 'initiated',
+                    'updated_at' => now(),
+                ]);
+
+            Log::info('PhonePe transaction_id saved', [
+                'order_id' => $order->id,
+                'transaction_id' => $response['transaction_id'],
+                'rows_updated' => $updated,
+            ]);
+        });
+
+        // ✅ Verify it actually persisted
+        $saved = DB::table('orders')->where('id', $order->id)->value('transaction_id');
+
+        if (empty($saved)) {
+            Log::error('PhonePe: transaction_id failed to persist', ['order_id' => $order->id]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Order update failed. Please try again.',
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
             'redirect_url' => $redirectUrl,
         ]);
     }
-
     // ─────────────────────────────────────────────
     // 🔁 PHONEPE REDIRECT CALLBACK
     // ─────────────────────────────────────────────
@@ -282,9 +305,37 @@ class CheckoutController extends Controller
             $orderId = decrypt($request->query('order'));
             $order = Order::findOrFail($orderId);
 
-            // Always verify with PhonePe — never trust redirect alone
-            $status = $phonePe->checkStatus($order->transaction_id);
-            $state = $status['data']['state'] ?? 'FAILED';
+            // ✅ Re-fetch fresh from DB — don't trust cached model
+            $transactionId = DB::table('orders')
+                ->where('id', $order->id)
+                ->value('transaction_id');
+
+            Log::info('PhonePe callback hit', [
+                'order_id' => $order->id,
+                'transaction_id' => $transactionId,
+                'payment_status' => $order->payment_status,
+            ]);
+
+            if (empty($transactionId)) {
+                Log::warning('PhonePe callback: transaction_id is null', [
+                    'order_id' => $order->id,
+                ]);
+
+                $order->update(['payment_status' => 'failed']);
+
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Payment could not be verified. Please try again.');
+            }
+
+            // ✅ Verify with PhonePe
+            $status = $phonePe->checkStatus($transactionId);
+            $state = $status['state'] ?? 'FAILED';
+
+            Log::info('PhonePe order status', [
+                'order_id' => $order->id,
+                'transaction_id' => $transactionId,
+                'state' => $state,
+            ]);
 
             if ($state === 'COMPLETED') {
                 $order->update([
@@ -298,13 +349,21 @@ class CheckoutController extends Controller
                 ]);
             }
 
+            if ($state === 'PENDING') {
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Payment is pending. Please wait or contact support.');
+            }
+
             $order->update(['payment_status' => 'failed']);
 
             return redirect()->route('checkout.index')
                 ->with('error', 'Payment failed. Please try again.');
 
         } catch (\Exception $e) {
-            Log::error('PhonePe callback error', ['error' => $e->getMessage()]);
+            Log::error('PhonePe callback error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return redirect()->route('checkout.index')
                 ->with('error', 'Something went wrong. Please contact support.');
