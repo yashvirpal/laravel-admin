@@ -15,8 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' =>  \App\Http\Middleware\RedirectIfNotAdmin::class,
-            'admin.guest' =>  \App\Http\Middleware\RedirectIfAdmin::class,
+            'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
+            'admin.guest' => \App\Http\Middleware\RedirectIfAdmin::class,
+        ]);
+        $middleware->validateCsrfTokens(except: [
+            'phonepe/webhook',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
