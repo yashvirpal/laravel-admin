@@ -92,6 +92,12 @@ class ProfileController extends Controller
         ];
 
         $recentOrders = $user->orders()->take(5)->get();
+        //         dd([
+//     'user_id'       => $user->id,
+//     'total_orders'  => $user->orders()->count(),
+//     'raw_orders'    => $user->orders()->pluck('user_id', 'id'),
+//     'total_spent'   => $user->orders()->where('payment_status', 'paid')->sum('total'),
+// ]);
 
         return view('profile.dashboard', compact('user', 'stats', 'recentOrders'));
     }
