@@ -342,7 +342,13 @@ class CheckoutController extends Controller
                     'payment_status' => 'paid',
                     'status' => 'processing',
                 ]);
-
+                $order->transactions()->create([
+                    'transaction_id' => $transactionId,
+                    'amount' => $order->total,
+                    'payment_method' => 'card',//'phonepe',
+                    'status' => 'success',
+                    'response_data' => $status, // full response array from checkStatus
+                ]);
                 return redirect()->route('page', [
                     'slug' => 'thank-you',
                     'order' => encrypt($order->id),
