@@ -21,15 +21,30 @@
             <a href="{{ route('products.details', $item->slug) }}" class="href">{{ $item->title }}</a>
         </h4>
         <x-frontend.price :item="$item" />
+        <!-- {{ $item->avg_rating }} -->
+         
         <div class="product-rating">
-            <div class="rating-stars">
-                <i class="fa fa-star"></i>
-                <i class="fa fa-star"></i>
-                <i class="fa fa-star"></i>
-                <i class="fa fa-star"></i>
-                <i class="fa fa-star"></i>
+            <div class="rating-starss d-inline-flex flex-row text-secondary" style="font-size: 13px;">
+               @php
+                    $rating = min(5, max(0, $item->avg_rating ?? 0));
+                    $full   = (int) floor($rating);
+                    $half   = (($rating - $full) >= 0.5) ? 1 : 0;
+                    $empty  = 5 - $full - $half;
+                @endphp
+
+                @for($i = 0; $i < $full; $i++)
+                    <i class="fa fa-star text-warning"></i>
+                @endfor
+
+                @if($half)
+                    <i class="fa fa-star-half-alt text-warning"></i>
+                @endif
+
+                @for($i = 0; $i < $empty; $i++)
+                    <i class="fa fa-star "></i>
+                @endfor
             </div>
-            <span class="rating-count">(22 Reviews)</span>
+            <span class="rating-count">( {{ $item->reviews->count() ?? 0 }} Reviews)</span>
         </div>
     </div>
 </div>

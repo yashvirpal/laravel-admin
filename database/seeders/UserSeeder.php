@@ -37,6 +37,7 @@ class UserSeeder extends Seeder
                 'country' => 'Countryland',
                 'zip' => '123456',
                 'phone' => '1234567890',
+                'is_default'=>1,
                 'status' => true,
             ]);
 
@@ -51,7 +52,8 @@ class UserSeeder extends Seeder
                 'state' => 'Stateville',
                 'country' => 'Countryland',
                 'zip' => '678900',
-                'phone' => '0987654321',
+                'phone' => '9876543210',
+                'is_default'=>1,
                 'status' => true,
             ]);
         }

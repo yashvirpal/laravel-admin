@@ -113,23 +113,23 @@ if (!function_exists('paymentStatusBadge')) {
         return match ($status) {
             'pending' => [
                 'class' => 'bg-warning text-dark',
-                'icon'  => 'fa-hourglass-half',
-                'text'  => 'Pending',
+                'icon' => 'fa-hourglass-half',
+                'text' => 'Pending',
             ],
             'completed' => [
                 'class' => 'bg-success',
-                'icon'  => 'fa-check',
-                'text'  => 'Completed',
+                'icon' => 'fa-check',
+                'text' => 'Completed',
             ],
             'cancelled' => [
                 'class' => 'bg-danger',
-                'icon'  => 'fa-times',
-                'text'  => 'Cancelled',
+                'icon' => 'fa-times',
+                'text' => 'Cancelled',
             ],
             default => [
                 'class' => 'bg-secondary',
-                'icon'  => 'fa-circle',
-                'text'  => ucfirst($status),
+                'icon' => 'fa-circle',
+                'text' => ucfirst($status),
             ],
         };
     }
@@ -161,7 +161,7 @@ if (!function_exists('enabledShippingMethods')) {
         return collect(json_decode(setting('shipping_methods') ?? '{}', true))
             ->filter(fn($g) => isset($g['enabled']) && (int) $g['enabled'] === 1)
             ->reverse();
-            //->values(); // optional: reindex keys
+        //->values(); // optional: reindex keys
     }
 }
 if (!function_exists('labelFromKey')) {
@@ -220,5 +220,15 @@ if (!function_exists('wishlist')) {
     }
 }
 
-
+if (!function_exists('generateOrderNumber')) {
+    function generateOrderNumber($order)
+    {
+        return 'ORD-'
+            . $order->created_at->format('Ymd')
+            . '-'
+            . $order->id
+            . '-'
+            . strtoupper(Str::random(4));
+    }
+}
 

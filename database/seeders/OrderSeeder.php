@@ -1,12 +1,10 @@
 <?php
-// database/seeders/OrderSeeder.php
 
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderCoupon;
@@ -18,234 +16,222 @@ use Carbon\Carbon;
 
 class OrderSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $users = User::all();
-        $products = Product::all();
-        $coupons = Coupon::all();
+        $users    = User::all();
+        $products = Product::with('variants')->get();
+        $coupons  = Coupon::with('actions')->get();
 
         if ($users->isEmpty() || $products->isEmpty()) {
-            $this->command->info('ℹ️ No users or products found, skipping order seeding.');
+            $this->command->warn('⚠️  No users or products found, skipping order seeding.');
             return;
         }
 
-        // Create 20 orders
         for ($i = 1; $i <= 20; $i++) {
             $user = $users->random();
 
-            // Get or create addresses for user
-            $billingAddress = $this->getOrCreateAddress($user, 'billing');
+            $billingAddress  = $this->getOrCreateAddress($user, 'billing');
             $shippingAddress = $this->getOrCreateAddress($user, 'shipping');
 
-            // Generate order number
-            $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+            // Random status & payment
+            $status        = collect(['pending', 'processing', 'completed', 'cancelled', 'refunded'])->random();
+            $paymentMethod = collect(['cash', 'card', 'upi', 'wallet', 'cod'])->random();
 
-            // Random status
-            $statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded'];
-            $status = $statuses[array_rand($statuses)];
-
-            // Random payment method
-            $paymentMethods = ['cash', 'card', 'upi', 'wallet', 'cod'];
-            $paymentMethod = $paymentMethods[array_rand($paymentMethods)];
-
-            // Random payment status
-            $paymentStatus = $status === 'completed' ? 'paid' : ($status === 'cancelled' ? 'failed' : 'pending');
-
-            // Random shipping method
-            $shippingMethods = ['standard', 'express', 'overnight'];
-            $shippingMethod = $shippingMethods[array_rand($shippingMethods)];
-            $shippingCost = match ($shippingMethod) {
-                'standard' => 0,
-                'express' => 50,
-                'overnight' => 100,
+            $paymentStatus = match ($status) {
+                'completed'           => 'paid',
+                'cancelled','refunded'=> 'failed',
+                default               => 'pending',
             };
 
+            $shippingMethod = collect(['standard', 'express', 'overnight'])->random();
+            $shippingCost   = match ($shippingMethod) {
+                'express'   => 50,
+                'overnight' => 100,
+                default     => 0,
+            };
+
+            // ✅ order_number can be empty string initially — NOT null (column is unique string)
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $user->id,
-                'customer_name' => $user->name,
-                'customer_email' => $user->email,
-                'customer_phone' => $user->phone ?? '9876543210',
-                'billing_address_id' => $billingAddress->id,
+                'order_number'        => 'TEMP-' . Str::random(8), // ✅ temp unique value
+                'user_id'             => $user->id,
+                'customer_name'       => $user->name,
+                'customer_email'      => $user->email,
+                'customer_phone'      => $user->phone ?? '9876543210',
+                'billing_address_id'  => $billingAddress->id,
                 'shipping_address_id' => $shippingAddress->id,
-                'billing_address' => $billingAddress->full_address,
-                'shipping_address' => $shippingAddress->full_address,
-                'subtotal' => 0, // Will update later
-                'discount_total' => 0,
-                'tax_total' => 0,
-                'shipping_total' => $shippingCost,
-                'total' => 0,
-                'shipping_method' => $shippingMethod,
-                'payment_method' => $paymentMethod,
-                'payment_status' => $paymentStatus,
-                'status' => $status,
-                'notes' => rand(0, 1) ? 'Please deliver before 6 PM' : null,
-                'created_at' => Carbon::now()->subDays(rand(0, 90)),
+                'billing_address'     => $billingAddress->full_address,
+                'shipping_address'    => $shippingAddress->full_address,
+                'subtotal'            => 0,
+                'discount_total'      => 0,
+                'tax_total'           => 0,
+                'shipping_total'      => $shippingCost,
+                'total'               => 0,
+                'shipping_method'     => $shippingMethod,
+                'payment_method'      => $paymentMethod,
+                'payment_status'      => $paymentStatus,
+                'status'              => $status,
+                'notes'               => rand(0, 1) ? 'Please deliver before 6 PM' : null,
+                'created_at'          => Carbon::now()->subDays(rand(0, 90)),
+                'updated_at'          => Carbon::now()->subDays(rand(0, 90)),
             ]);
 
-            $this->command->info("✅ Order created: {$order->order_number}");
+            // ✅ Now update with real order number using ID
+            $order->update([
+                'order_number' =>generateOrderNumber($order),
+            ]);
 
-            // Add 1-5 random products as order items
-            $selectedProducts = $products->random(rand(1, 5));
+            // ── ORDER ITEMS ──────────────────────────────────────
+            $count    = min(rand(1, 5), $products->count());
+            $selected = $products->random($count);
             $subtotal = 0;
 
-            foreach ($selectedProducts as $product) {
+            foreach ($selected as $product) {
                 $quantity = rand(1, 3);
+                $variant  = null;
 
-                // Check if product has variants
-                $variant = null;
-                if ($product->has_variants) {
-                    $variant = $product->variants()->inRandomOrder()->first();
+                if ($product->has_variants && $product->variants->isNotEmpty()) {
+                    $variant = $product->variants->random();
                 }
 
-                // Get price
+                $price = 0;
+
                 if ($variant) {
-                    $price = $variant->sale_price ?? $variant->regular_price ?? $variant->price ?? 0;
-                    $productName = $product->title;
-                    $variantName = $variant->name;
-                    $sku = $variant->sku;
+                    // ✅ Check common price column names safely
+                    $price = $variant->sale_price
+                        ?? $variant->regular_price
+                        ?? $variant->price
+                        ?? 0;
                 } else {
-                    $price = $product->sale_price ?? $product->regular_price ?? $product->price ?? 0;
-                    $productName = $product->title;
-                    $variantName = null;
-                    $sku = $product->sku ?? null;
+                    $price = $product->sale_price
+                        ?? $product->regular_price
+                        ?? $product->price
+                        ?? 0;
                 }
 
+                $price        = (float) $price; // ✅ cast — avoid null arithmetic
                 $itemSubtotal = $price * $quantity;
-                $subtotal += $itemSubtotal;
+                $subtotal    += $itemSubtotal;
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'variant_id' => $variant?->id,
-                    'product_name' => $productName,
-                    'variant_name' => $variantName,
-                    'sku' => $sku,
-                    'quantity' => $quantity,
-                    'price' => $price,
-                    'subtotal' => $itemSubtotal,
+                    'order_id'     => $order->id,
+                    'product_id'   => $product->id,
+                    'variant_id'   => $variant?->id,
+                    'product_name' => $product->title,
+                    'variant_name' => $variant?->name,
+                    'sku'          => $variant?->sku ?? $product->sku ?? null,
+                    'quantity'     => $quantity,
+                    'price'        => $price,
+                    'subtotal'     => $itemSubtotal,
                 ]);
             }
 
-            // Randomly apply 0-2 coupons
+            // ── COUPONS ──────────────────────────────────────────
             $discountTotal = 0;
+
             if ($coupons->isNotEmpty() && rand(0, 1)) {
-                $numCoupons = rand(1, min(2, $coupons->count()));
+                $numCoupons      = rand(1, min(2, $coupons->count()));
                 $selectedCoupons = $coupons->random($numCoupons);
 
+                // ✅ random() returns Collection or single model — normalize
+                if (! $selectedCoupons instanceof \Illuminate\Support\Collection) {
+                    $selectedCoupons = collect([$selectedCoupons]);
+                }
+
                 foreach ($selectedCoupons as $coupon) {
-                    // Calculate discount (simplified)
+                    $action   = $coupon->actions->first();
                     $discount = 0;
 
-                    // Get first action of coupon
-                    $action = $coupon->actions->first();
-
                     if ($action) {
-                        switch ($action->action) {
-                            case 'fixed_discount':
-                                $discount = min($action->value, $subtotal);
-                                break;
-                            case 'percentage_discount':
-                                $discount = ($subtotal * $action->value) / 100;
-                                break;
-                            case 'discount_product':
-                                $discount = rand(50, 200); // Random for seeding
-                                break;
-                        }
+                        $discount = match ($action->action) {
+                            'fixed_discount'      => min((float) $action->value, $subtotal),
+                            'percentage_discount' => round(($subtotal * (float) $action->value) / 100, 2),
+                            default               => round(rand(50, 200) / 1, 2),
+                        };
                     }
 
                     $discountTotal += $discount;
 
                     OrderCoupon::create([
-                        'order_id' => $order->id,
-                        'coupon_id' => $coupon->id,
-                        'code' => $coupon->code,
+                        'order_id'        => $order->id,
+                        'coupon_id'       => $coupon->id,
+                        'code'            => $coupon->code,
                         'discount_amount' => $discount,
                     ]);
                 }
             }
 
-            // Ensure discount doesn't exceed subtotal
+            // ── TOTALS ───────────────────────────────────────────
             $discountTotal = min($discountTotal, $subtotal);
-
-            // Calculate tax (10% on subtotal after discount)
             $taxableAmount = $subtotal - $discountTotal;
-            $taxTotal = round($taxableAmount * 0.10, 2);
+            $taxTotal      = round($taxableAmount * 0.10, 2);
+            $total         = round($subtotal - $discountTotal + $taxTotal + $shippingCost, 2);
 
-            // Calculate final total
-            $total = $subtotal - $discountTotal + $taxTotal + $shippingCost;
-
-            // Update order totals
             $order->update([
-                'subtotal' => $subtotal,
+                'subtotal'       => $subtotal,
                 'discount_total' => $discountTotal,
-                'tax_total' => $taxTotal,
-                'total' => $total,
+                'tax_total'      => $taxTotal,
+                'total'          => $total,
             ]);
 
-            // Create transaction for completed/processing orders
+            // ── TRANSACTION ──────────────────────────────────────
             if (in_array($status, ['completed', 'processing'])) {
-                $transactionStatus = $status === 'completed' ? 'success' : 'pending';
-
                 Transaction::create([
-                    'order_id' => $order->id,
+                    'order_id'       => $order->id,
                     'transaction_id' => 'TXN-' . strtoupper(Str::random(12)),
-                    'amount' => $total,
-                    'payment_method' => $paymentMethod,
-                    'status' => $transactionStatus,
-                    'response_data' => [
-                        'gateway' => $paymentMethod,
+                    'amount'         => $total,
+                    'payment_method' => $paymentMethod === 'phonepe' ? 'upi' : $paymentMethod, // ✅ match enum
+                    'status'         => $status === 'completed' ? 'success' : 'pending',
+                    'response_data'  => json_encode([  // ✅ cast to JSON string — column is text
+                        'gateway'   => $paymentMethod,
                         'timestamp' => now()->toDateTimeString(),
                         'reference' => 'REF-' . strtoupper(Str::random(8)),
-                    ],
+                    ]),
                     'created_at' => $order->created_at,
+                    'updated_at' => $order->created_at,
                 ]);
             }
 
-            $this->command->info("   └─ Items: {$order->items->count()}, Coupons: {$order->coupons->count()}, Total: ₹{$total}");
+            $itemCount   = $order->items()->count();
+            $couponCount = $order->coupons()->count();
+            $this->command->info("✅ {$order->order_number} | Items: {$itemCount} | Coupons: {$couponCount} | ₹{$total}");
         }
 
-        $this->command->info("\n✅ 20 orders with items, coupons, and transactions created");
-        $this->command->info("📊 Order Summary:");
-        $this->command->info("   - Pending: " . Order::where('status', 'pending')->count());
-        $this->command->info("   - Processing: " . Order::where('status', 'processing')->count());
-        $this->command->info("   - Completed: " . Order::where('status', 'completed')->count());
-        $this->command->info("   - Cancelled: " . Order::where('status', 'cancelled')->count());
+        $this->command->newLine();
+        $this->command->info('📊 Order Summary:');
+        $this->command->info('   Pending:    ' . Order::where('status', 'pending')->count());
+        $this->command->info('   Processing: ' . Order::where('status', 'processing')->count());
+        $this->command->info('   Completed:  ' . Order::where('status', 'completed')->count());
+        $this->command->info('   Cancelled:  ' . Order::where('status', 'cancelled')->count());
+        $this->command->info('   Refunded:   ' . Order::where('status', 'refunded')->count());
     }
 
-    /**
-     * Get or create address for user
-     */
     private function getOrCreateAddress(User $user, string $type): Address
     {
-        // Try to get existing address
-        $address = $user->addresses()->where('type', $type)->first();
+        $existing = $user->addresses()->where('type', $type)->first();
 
-        if ($address) {
-            return $address;
+        if ($existing) {
+            return $existing;
         }
 
-        // Create new address
-        $faker = \Faker\Factory::create('en_IN'); // Indian locale
+        $faker = \Faker\Factory::create('en_IN');
+
+        $nameParts = explode(' ', $user->name, 2);
 
         return Address::create([
-            'user_id' => $user->id,
-            'type' => $type,
-            'first_name' => explode(' ', $user->name)[0] ?? 'John',
-            'last_name' => explode(' ', $user->name)[1] ?? 'Doe',
-            'company' => rand(0, 1) ? $faker->company : null,
+            'user_id'       => $user->id,
+            'type'          => $type,
+            'first_name'    => $nameParts[0] ?? 'John',
+            'last_name'     => $nameParts[1] ?? 'Doe',     // ✅ safer split
+            'company'       => rand(0, 1) ? $faker->company : null,
             'address_line1' => $faker->streetAddress,
             'address_line2' => rand(0, 1) ? $faker->secondaryAddress : null,
-            'phone' => $user->phone ?? $faker->phoneNumber,
-            'city' => $faker->city,
-            'state' => $faker->state,
-            'country' => 'India',
-            'zip' => $faker->postcode,
-            'is_default' => true,
-            'status' => true,
+            'phone'         => $user->phone ?? $faker->numerify('9#########'),
+            'city'          => $faker->city,
+            'state'         => $faker->state,
+            'country'       => 'India',
+            'zip'           => $faker->numerify('######'),  // ✅ Indian 6-digit pincode
+            'is_default'    => true,
+            'status'        => true,
         ]);
     }
 }

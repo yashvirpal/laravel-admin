@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Page;
 use App\Models\Slider;
 use App\Models\ProductCategory;
+use App\Models\ProductReview;
 use App\Models\Product;
 use App\Models\GlobalSection;
 use App\Models\Wishlist;
@@ -113,7 +114,7 @@ class HomeController extends Controller
 
     public function page($slug)
     {
-        
+
         $page = Page::where('slug', $slug)->first();
         if (!$page) {
             return response()->view('frontend.404', [], 404);
@@ -162,7 +163,7 @@ class HomeController extends Controller
                     if (Auth::check()) {
                         return redirect(route('profile.dashboard', absolute: false));
                     }
-                   
+
                     return view("frontend.$template.$page->slug", compact('page'));
                 }
                 return view("frontend.$template", compact('page'));
@@ -242,7 +243,7 @@ class HomeController extends Controller
     public function productDetails($slug)
     {
 
-        $product = Product::active()->with(['categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])->where('slug', $slug)->firstOrFail();
+        $product = Product::active()->with(['reviews', 'categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])->where('slug', $slug)->firstOrFail();
 
 
         $categoryIds = $product->categories->pluck('id');
@@ -477,7 +478,7 @@ class HomeController extends Controller
         }
     }
 
-    public function load(Request $request)
+    public function loadd(Request $request)
     {
 
         $query = Product::query()->stock()->active();
@@ -565,6 +566,104 @@ class HomeController extends Controller
             ], 500);
         }
     }
+    public function load(Request $request)
+    {
+        $query = Product::query()->stock()->active();
+
+        // Category filter
+        if (!empty($request->categories) && is_array($request->categories) && count($request->categories) > 0) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->whereIn('product_categories.id', $request->categories);
+            });
+        }
+
+        // Price filter
+        $minPrice = filled($request->min_price) ? (float) $request->min_price : null;
+        $maxPrice = filled($request->max_price) ? (float) $request->max_price : null;
+
+        if ($minPrice !== null) {
+            $query->where(function ($q) use ($minPrice) {
+                $q->where(function ($inner) use ($minPrice) {
+                    $inner->whereNotNull('sale_price')
+                        ->where('sale_price', '>=', $minPrice);
+                })->orWhere(function ($inner) use ($minPrice) {
+                    $inner->whereNull('sale_price')
+                        ->where('regular_price', '>=', $minPrice);
+                });
+            });
+        }
+
+        if ($maxPrice !== null) {
+            $query->where(function ($q) use ($maxPrice) {
+                $q->where(function ($inner) use ($maxPrice) {
+                    $inner->whereNotNull('sale_price')
+                        ->where('sale_price', '<=', $maxPrice);
+                })->orWhere(function ($inner) use ($maxPrice) {
+                    $inner->whereNull('sale_price')
+                        ->where('regular_price', '<=', $maxPrice);
+                });
+            });
+        }
+
+        // Rating filter
+        $rating = filled($request->rating) ? (float) $request->rating : null;
+
+        // if ($rating !== null && $rating > 0) {
+        //     $query->whereIn('id', function ($q) use ($rating) {
+        //         $q->select('product_id')
+        //             ->from('product_reviews')
+        //             ->groupBy('product_id')
+        //             ->havingRaw('AVG(rating) >= ?', [$rating]);
+        //     });
+        // }
+        if ($rating !== null && $rating > 0) {
+            $query->whereIn('id', function ($q) use ($rating) {
+                $q->select('product_id')
+                    ->from('product_reviews')
+                    ->groupBy('product_id')
+                    ->havingRaw('CAST(AVG(rating) AS FLOAT) >= ?', [$rating]);
+            });
+        }
+
+        // Sorting
+        switch ($request->sort) {
+            case 'popular':
+                $query->orderBy('views', 'desc');
+                break;
+            case 'name-asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'name-desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'price-low':
+                $query->orderByRaw('COALESCE(sale_price, regular_price) ASC');
+                break;
+            case 'price-high':
+                $query->orderByRaw('COALESCE(sale_price, regular_price) DESC');
+                break;
+            default:
+                $query->latest();
+                break;
+        }
+
+        $products = $query->paginate(12, ['*'], 'page', $request->page);
+
+        try {
+            return response()->json([
+                'html' => view('components.frontend.product-list', compact('products'))->render(),
+                'count' => $products->count(),
+                'hasMore' => $products->hasMorePages(),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    }
 
     public function getVariantPrice(Request $request)
     {
@@ -599,6 +698,59 @@ class HomeController extends Controller
             'stock' => $variant->stock ?? 0,
             'sku' => $variant->sku
         ]);
+    }
+
+
+    public function AddReview(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $exists = ProductReview::where('product_id', $request->product_id)
+            ->where('email', $request->email)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You already reviewed this product'
+            ], 400);
+        }
+        try {
+
+            $review = ProductReview::create([
+                'product_id' => $request->product_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'rating' => $request->rating,
+                'review' => $request->review,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Review added successfully!',
+                'data' => $review
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 }

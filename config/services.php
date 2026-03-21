@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'phonepe' => [
+        'client_id' => env('PHONEPE_CLIENT_ID'),
+        'client_version' => env('PHONEPE_CLIENT_VERSION', '1'),
+        'client_secret' => env('PHONEPE_CLIENT_SECRET'),
+        'token_url' => env('PHONEPE_TOKEN_URL'),
+        'base_url' => env('PHONEPE_BASE_URL'),
+    ],
+
 ];

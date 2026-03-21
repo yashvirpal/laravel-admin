@@ -216,7 +216,7 @@
         <!-- Tabs -->
         <div class="product-tabs">
             <button class="product-tab-btn active" data-tab="desc">Description</button>
-            <button class="product-tab-btn" data-tab="reviews">Reviews <span class="count">0</span></button>
+            <button class="product-tab-btn" data-tab="reviews">Reviews <span class="count">{{ $product->reviews->count() }}</span></button>
             @if($product->faqs->count())
                 <button class="product-tab-btn" data-tab="faq">FAQ</button>
             @endif
@@ -230,60 +230,98 @@
 
         <!-- Reviews -->
         <div id="reviews" class="tab-content-box">
+
             <!-- Comment List -->
             <div class="comment-list mb-5">
-                <div class="comment-item">
-                    <div class="comment-avatar">A</div>
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <h6>Akash Verma</h6>
-                            <span class="comment-date">June 12, 2025</span>
+                @foreach($product->reviews as $review)
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            {{ strtoupper(substr($review->name, 0, 1)) }}
                         </div>
-                        <div class="comment-rating">★★★★☆</div>
-                        <p>Beautiful pendant, very good quality and fast delivery.</p>
-                    </div>
-                </div>
 
-                <div class="comment-item">
-                    <div class="comment-avatar">R</div>
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <h6>Riya Sharma</h6>
-                            <span class="comment-date">June 10, 2025</span>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <h6>{{ $review->name }}</h6>
+                                <span class="comment-date">
+                                    {{ $review->created_at->format('M d, Y') }}
+                                </span>
+                            </div>
+
+                            <div class="comment-rating">
+                                @for($i = 1; $i <= 5; $i++)
+                                    @if($i <= $review->rating)
+                                        ★
+                                    @else
+                                        ☆
+                                    @endif
+                                @endfor
+                            </div>
+
+                            <p>{{ $review->review }}</p>
                         </div>
-                        <div class="comment-rating">★★★★★</div>
-                        <p>Loved the crystal clarity and packaging. Highly recommended.</p>
                     </div>
-                </div>
+                @endforeach
             </div>
 
             <!-- Review Form -->
             <div class="review-section">
                 <h3 class="review-title">Add a Review</h3>
-                <div class="rating-wrap mb-3">
-                    <label class="fw-semibold mb-1">Your rating *</label>
-                    <div class="rating-stars">
-                        <i class="fas fa-star" data-index="1"></i>
-                        <i class="fas fa-star" data-index="2"></i>
-                        <i class="fas fa-star" data-index="3"></i>
-                        <i class="fas fa-star" data-index="4"></i>
-                        <i class="fas fa-star" data-index="5"></i>
-                    </div>
-                </div>
+                
 
-                <form>
+                <form method="POST" id="reviewForm" action="{{ route('add.review') }}">
+                    @csrf
+
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <div class="rating-wrapp col-md-12 mb-3">
+                        <label class="fw-semibold mb-1">Your Rating *</label>
+
+                        <div class="rating-stars">
+                            @for($i = 5; $i >= 1; $i--)
+                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}">
+                                <label for="star{{ $i }}" class="star-label">
+                                    <i class="fas fa-star"></i>
+                                </label>
+                            @endfor
+                            <style>
+                            .rating-stars {
+                                display: inline-flex;
+                                flex-direction: row-reverse;
+                            }
+                            .rating-stars input {
+                                display: none;
+                            }
+                            .star-label i {
+                                color: #ccc;
+                                cursor: pointer;
+                                transition: color 0.15s;
+                            }
+                            /* Hover: highlight hovered star and all stars after it in DOM (= visually before it) */
+                            .rating-stars:not(:has(input:checked)) label:hover i,
+                            .rating-stars:not(:has(input:checked)) label:hover ~ label i,
+                            .star-label:hover i,
+                            .star-label:hover ~ label i {
+                                color: gold;
+                            }
+                            /* Checked: highlight checked star and all higher-value stars (come after in DOM) */
+                            .rating-stars input:checked + label i,
+                            .rating-stars input:checked + label ~ label i {
+                                color: gold;
+                            }
+                            </style>
+                        </div>                       
+                    </div>
                     <div class="mb-3">
-                        <label class="fw-semibold mb-1">Your review *</label>
-                        <textarea class="form-control" rows="4"></textarea>
+                        <label class="fw-semibold mb-1">Your Review *</label>
+                        <textarea class="form-control" rows="4" name="review" id="review"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="fw-semibold mb-1">Name *</label>
-                            <input type="text" class="form-control">
+                            <input type="text" class="form-control" name="name" id="name" value="{{ auth()->user()->name ?? '' }}">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="fw-semibold mb-1">Email *</label>
-                            <input type="email" class="form-control">
+                            <input type="email" class="form-control" name="email" id="email" value="{{ auth()->user()->email ?? '' }}">
                         </div>
                     </div>
                     <button type="submit" class="btn-review-submit">Submit</button>
@@ -341,6 +379,16 @@
 @endsection
 
 @push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const rules = [
+                { selector: "#name", rule: "name" },
+                { selector: "#email", rule: "email" },             
+                { selector: "#review", rule: "message" }
+            ];
+            initFormValidator("#reviewForm", rules);
+        });
+    </script>
 <script>
 let selectedVariantId = null;
 const productId = {{ $product->id }};

@@ -1,10 +1,13 @@
 <?php
-// app/Http/Controllers/CheckoutController.php
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\Order;
+use App\Models\User;
+use App\Models\Address;
 use App\Services\CartService;
+use App\Services\PhonePeService;
+use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -12,13 +15,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use App\Models\Address;
-use App\Models\Order;
+use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\ValidationException;
-use App\Facades\CartServiceFacade as CartFacade;
-use App\Http\Requests\Auth\LoginRequest;
 
 class CheckoutController extends Controller
 {
@@ -29,9 +28,10 @@ class CheckoutController extends Controller
         $this->cartService = $cartService;
     }
 
-    /**
-     * Display checkout page
-     */
+    // ─────────────────────────────────────────────
+    // 📄 CHECKOUT PAGE
+    // ─────────────────────────────────────────────
+
     public function index()
     {
         $cart = $this->cartService->getCart(
@@ -39,50 +39,42 @@ class CheckoutController extends Controller
             session()->getId()
         );
 
-        // Ensure cart has items
         if ($cart->items->isEmpty()) {
             return redirect()->route('cart.index')
                 ->with('error', 'Your cart is empty');
         }
 
-        // Load coupons with pivot data
         $cart->load([
-            'coupons' => function ($query) {
-                $query->withPivot('discount_amount');
-            }
+            'coupons' => fn($q) => $q->withPivot('discount_amount')
         ]);
 
         return view('frontend.checkout', compact('cart'));
     }
 
-    /**
-     * Update shipping method
-     */
-    public function updateShipping(Request $request)
+    // ─────────────────────────────────────────────
+    // 🚚 UPDATE SHIPPING
+    // ─────────────────────────────────────────────
+
+    public function updateShipping(Request $request): JsonResponse
     {
         try {
             $request->validate([
                 'shipping_method' => 'required|string',
                 'shipping_label' => 'required|string',
-                'shipping_cost' => 'required|numeric|min:0'
+                'shipping_cost' => 'required|numeric|min:0',
             ]);
 
-            Log::info('Updating shipping method', $request->all());
-
-            // Get cart
             $cart = $this->cartService->getCart(
                 auth()->id(),
                 session()->getId()
             );
 
-            // Update shipping
             $this->cartService->setShipping(
                 $request->shipping_method,
                 $request->shipping_label,
                 $request->shipping_cost
             );
 
-            // Refresh cart
             $cart->refresh();
 
             return response()->json([
@@ -101,54 +93,42 @@ class CheckoutController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Shipping update failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Shipping update failed', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to update shipping method'
+                'message' => 'Failed to update shipping method',
             ], 500);
         }
     }
 
-    /**
-     * Login from checkout page
-     */
-    public function login(LoginRequest $request)
+    // ─────────────────────────────────────────────
+    // 🔐 LOGIN FROM CHECKOUT PAGE
+    // ─────────────────────────────────────────────
+
+    public function login(LoginRequest $request): JsonResponse|RedirectResponse
     {
         try {
-            // Save old session ID before authentication
             $oldSessionId = session()->getId();
 
-            // Authenticate user
             $request->authenticate();
             $userId = auth()->id();
 
-            Log::info('Checkout login - merging cart', [
-                'user_id' => $userId,
-                'session_id' => $oldSessionId
-            ]);
-
-            // Merge cart BEFORE session regeneration
             try {
                 $this->cartService->mergeGuestCart($oldSessionId, $userId);
-                Log::info('✅ Cart merged in checkout login');
+                Log::info('✅ Cart merged on checkout login');
             } catch (\Exception $e) {
-                Log::error('❌ Cart merge failed in checkout login', [
-                    'error' => $e->getMessage()
-                ]);
+                Log::error('❌ Cart merge failed on checkout login', ['error' => $e->getMessage()]);
             }
 
-            // Now regenerate session
             $request->session()->regenerate();
 
             if ($request->ajax()) {
                 return response()->json([
                     'status' => true,
                     'message' => 'Login successful.',
-                ], 200);
+                    'redirect_url' => route('page', 'checkout'),
+                ]);
             }
 
             return redirect()->route('checkout.index');
@@ -165,15 +145,15 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
-     * Process checkout
-     */
-    public function checkOut(Request $request): JsonResponse|RedirectResponse
+    // ─────────────────────────────────────────────
+    // ✅ PROCESS CHECKOUT
+    // ─────────────────────────────────────────────
+
+    public function checkOut(Request $request, PhonePeService $phonePe): JsonResponse
     {
         try {
             DB::beginTransaction();
 
-            // Get cart
             $cart = $this->cartService->getCart(
                 auth()->id(),
                 session()->getId()
@@ -183,7 +163,6 @@ class CheckoutController extends Controller
                 throw new \Exception('Cart is empty');
             }
 
-            // Validate payment and shipping
             $request->validate([
                 'payment' => 'required|string',
                 'shipping' => 'required|string',
@@ -192,12 +171,13 @@ class CheckoutController extends Controller
             // 1️⃣ Create / Get User
             $user = $this->createUser($request);
 
-            // 2️⃣ Create Billing Address
-            $billingAddress = $this->createBillingAddress($request, $user->id);
+            // 2️⃣ Billing Address — create or update if ID passed
+            $billingAddress = $this->createOrUpdateBillingAddress($request, $user->id);
 
-            // 3️⃣ Create Shipping Address
+            // 3️⃣ Shipping Address
             if ($request->boolean('differentShipping')) {
-                $shippingAddress = $this->createShippingAddress($request, $user->id);
+                // Create or update if ID passed
+                $shippingAddress = $this->createOrUpdateShippingAddress($request, $user->id);
             } else {
                 // Clone billing → shipping
                 $shippingAddress = $billingAddress->replicate();
@@ -205,21 +185,28 @@ class CheckoutController extends Controller
                 $shippingAddress->save();
             }
 
-            // 4️⃣ Create Order from Cart
+            // 4️⃣ Create Order
             $order = $this->createOrderFromCart($user, $billingAddress, $shippingAddress, $cart, $request);
 
-            // 5️⃣ Mark coupons as used
+            // 5️⃣ Mark coupons used & clear cart
             $this->cartService->markCouponsUsed();
-
-            // 6️⃣ Clear cart
             $this->cartService->clear();
 
             DB::commit();
 
+            // 6️⃣ Route by payment method
+            if ($request->payment === 'phonepe') {
+                return $this->initiatePhonePePayment($phonePe, $order);
+            }
+
+            // COD / offline
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully!',
-                'redirect_url' => route('page', ['slug' => 'thank-you', 'order' => encrypt($order->id)]),
+                'redirect_url' => route('page', [
+                    'slug' => 'thank-you',
+                    'order' => encrypt($order->id),
+                ]),
             ]);
 
         } catch (ValidationException $e) {
@@ -235,19 +222,204 @@ class CheckoutController extends Controller
 
             Log::error('Checkout failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage() ?? 'Something went wrong. Please try again.',
+                'message' => 'Something went wrong. Please try again.',
             ], 500);
         }
     }
 
-    /**
-     * Create or get user
-     */
+    // ─────────────────────────────────────────────
+    // 💳 INITIATE PHONEPE PAYMENT
+    // ─────────────────────────────────────────────
+
+    private function initiatePhonePePayment(PhonePeService $phonePe, Order $order): JsonResponse
+    {
+        $response = $phonePe->createOrder(
+            amount: $order->total,
+            userId: $order->user_id,
+            redirectUrl: route('payment.callback', ['order' => encrypt($order->id)]),
+            callbackUrl: route('payment.webhook')
+        );
+
+        $redirectUrl = $response['redirect_url'] ?? null;
+
+        if (!$response['success'] || !$redirectUrl) {
+            Log::error('PhonePe payment initiation failed', [
+                'order_id' => $order->id,
+                'response' => $response,
+            ]);
+
+            $order->update(['payment_status' => 'failed']);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment gateway error. Please try again.',
+            ], 500);
+        }
+
+        // ✅ Use DB::transaction to guarantee the save
+        DB::transaction(function () use ($order, $response) {
+            $updated = DB::table('orders')
+                ->where('id', $order->id)
+                ->update([
+                    'transaction_id' => $response['transaction_id'],
+                    'payment_status' => 'initiated',
+                    'updated_at' => now(),
+                ]);
+
+            Log::info('PhonePe transaction_id saved', [
+                'order_id' => $order->id,
+                'transaction_id' => $response['transaction_id'],
+                'rows_updated' => $updated,
+            ]);
+        });
+
+        // ✅ Verify it actually persisted
+        $saved = DB::table('orders')->where('id', $order->id)->value('transaction_id');
+
+        if (empty($saved)) {
+            Log::error('PhonePe: transaction_id failed to persist', ['order_id' => $order->id]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Order update failed. Please try again.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => $redirectUrl,
+        ]);
+    }
+    // ─────────────────────────────────────────────
+    // 🔁 PHONEPE REDIRECT CALLBACK
+    // ─────────────────────────────────────────────
+
+    public function paymentCallback(Request $request, PhonePeService $phonePe): RedirectResponse
+    {
+        try {
+            $orderId = decrypt($request->query('order'));
+            $order = Order::findOrFail($orderId);
+
+            // ✅ Re-fetch fresh from DB — don't trust cached model
+            $transactionId = DB::table('orders')
+                ->where('id', $order->id)
+                ->value('transaction_id');
+
+            Log::info('PhonePe callback hit', [
+                'order_id' => $order->id,
+                'transaction_id' => $transactionId,
+                'payment_status' => $order->payment_status,
+            ]);
+
+            if (empty($transactionId)) {
+                Log::warning('PhonePe callback: transaction_id is null', [
+                    'order_id' => $order->id,
+                ]);
+
+                $order->update(['payment_status' => 'failed']);
+
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Payment could not be verified. Please try again.');
+            }
+
+            // ✅ Verify with PhonePe
+            $status = $phonePe->checkStatus($transactionId);
+            $state = $status['state'] ?? 'FAILED';
+
+            Log::info('PhonePe order status', [
+                'order_id' => $order->id,
+                'transaction_id' => $transactionId,
+                'state' => $state,
+            ]);
+
+            if ($state === 'COMPLETED') {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'processing',
+                ]);
+
+                return redirect()->route('page', [
+                    'slug' => 'thank-you',
+                    'order' => encrypt($order->id),
+                ]);
+            }
+
+            if ($state === 'PENDING') {
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Payment is pending. Please wait or contact support.');
+            }
+
+            $order->update(['payment_status' => 'failed']);
+
+            return redirect()->route('checkout.index')
+                ->with('error', 'Payment failed. Please try again.');
+
+        } catch (\Exception $e) {
+            Log::error('PhonePe callback error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('checkout.index')
+                ->with('error', 'Something went wrong. Please contact support.');
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // 💸 REFUND
+    // ─────────────────────────────────────────────
+
+    public function refund(PhonePeService $phonePe, Order $order): JsonResponse
+    {
+        if (!$order->transaction_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No transaction ID found for this order.',
+            ], 400);
+        }
+
+        $response = $phonePe->refund($order->transaction_id, $order->total);
+
+        if ($response['success']) {
+            $order->update(['payment_status' => 'refunded']);
+        }
+
+        return response()->json([
+            'success' => $response['success'],
+            'data' => $response['data'],
+        ]);
+    }
+
+    // ─────────────────────────────────────────────
+    // 🔍 VERIFY STATUS
+    // ─────────────────────────────────────────────
+
+    public function verify(PhonePeService $phonePe, Order $order): JsonResponse
+    {
+        if (!$order->transaction_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No transaction ID found.',
+            ], 400);
+        }
+
+        $status = $phonePe->checkStatus($order->transaction_id);
+
+        return response()->json([
+            'success' => true,
+            'data' => $status,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────
+    // 🔒 PRIVATE HELPERS
+    // ─────────────────────────────────────────────
+
     private function createUser(Request $request): User
     {
         if (Auth::check()) {
@@ -261,7 +433,7 @@ class CheckoutController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->billing_first_name . ' ' . $request->billing_last_name,
+            'name' => trim($request->billing_first_name . ' ' . $request->billing_last_name),
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'country_code' => $request->country_code ?? '91',
@@ -272,13 +444,12 @@ class CheckoutController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        // Merge cart after creating new user
         try {
             $this->cartService->mergeGuestCart(session()->getId(), $user->id);
         } catch (\Exception $e) {
-            Log::error('Failed to merge cart for new user', [
+            Log::error('Cart merge failed for new user', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -286,11 +457,12 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Create billing address
+     * Create billing address or update existing if billing_address_id passed
      */
-    private function createBillingAddress(Request $request, int $userId)
+    private function createOrUpdateBillingAddress(Request $request, int $userId): Address
     {
         $data = $request->validate([
+            'billing_address_id' => 'nullable|exists:addresses,id',
             'billing_first_name' => 'required|string',
             'billing_last_name' => 'required|string',
             'billing_address_line1' => 'required|string',
@@ -301,7 +473,7 @@ class CheckoutController extends Controller
             'billing_phone' => 'required|string',
         ]);
 
-        return Address::create([
+        $fields = [
             'user_id' => $userId,
             'type' => 'billing',
             'first_name' => $data['billing_first_name'],
@@ -312,14 +484,30 @@ class CheckoutController extends Controller
             'state' => $data['billing_state'],
             'zip' => $data['billing_zip'],
             'phone' => $data['billing_phone'],
-        ]);
+        ];
+
+        // ✅ Update if ID passed and belongs to this user
+        if (!empty($data['billing_address_id'])) {
+            $address = Address::where('id', $data['billing_address_id'])
+                ->where('user_id', $userId)
+                ->first();
+
+            if ($address) {
+                $address->update($fields);
+                return $address->fresh();
+            }
+        }
+
+        return Address::create($fields);
     }
+
     /**
-     * Create shipping address
+     * Create shipping address or update existing if shipping_address_id passed
      */
-    private function createShippingAddress(Request $request, int $userId)
+    private function createOrUpdateShippingAddress(Request $request, int $userId): Address
     {
         $data = $request->validate([
+            'shipping_address_id' => 'nullable|exists:addresses,id',
             'shipping_first_name' => 'required|string',
             'shipping_last_name' => 'required|string',
             'shipping_address_line1' => 'required|string',
@@ -330,7 +518,7 @@ class CheckoutController extends Controller
             'shipping_phone' => 'required|string',
         ]);
 
-        return Address::create([
+        $fields = [
             'user_id' => $userId,
             'type' => 'shipping',
             'first_name' => $data['shipping_first_name'],
@@ -341,38 +529,40 @@ class CheckoutController extends Controller
             'state' => $data['shipping_state'],
             'zip' => $data['shipping_zip'],
             'phone' => $data['shipping_phone'],
-        ]);
+        ];
+
+        // ✅ Update if ID passed and belongs to this user
+        if (!empty($data['shipping_address_id'])) {
+            $address = Address::where('id', $data['shipping_address_id'])
+                ->where('user_id', $userId)
+                ->first();
+
+            if ($address) {
+                $address->update($fields);
+                return $address->fresh();
+            }
+        }
+
+        return Address::create($fields);
     }
 
-
-    /**
-     * Create order from cart
-     */
-    private function createOrderFromCart($user, $billing, $shipping, $cart, $request)
+    private function createOrderFromCart($user, $billing, $shipping, $cart, $request): Order
     {
-        // Generate order number
-        $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
-
-        // Create order
         $order = Order::create([
-            'order_number' => $orderNumber,
+            'order_number' => 'TEMP-' . Str::random(8), // temp — updated below
             'user_id' => $user->id,
             'customer_name' => $user->name,
             'customer_email' => $user->email,
             'customer_phone' => $user->phone,
             'billing_address_id' => $billing->id,
             'shipping_address_id' => $shipping->id,
-
-            // Store formatted addresses as backup
             'billing_address' => $billing->full_address,
             'shipping_address' => $shipping->full_address,
-
             'status' => 'pending',
             'payment_method' => $request->payment,
             'payment_status' => 'pending',
+            'transaction_id' => null,
             'notes' => $request->order_notes,
-
-            // Cart totals
             'subtotal' => $cart->subtotal,
             'discount_total' => $cart->discount_total,
             'tax_total' => $cart->tax_total,
@@ -381,7 +571,10 @@ class CheckoutController extends Controller
             'total' => $cart->grand_total,
         ]);
 
-        // Create order items
+        $order->update([
+            'order_number' => generateOrderNumber($order),
+        ]);
+
         foreach ($cart->items as $item) {
             $order->items()->create([
                 'product_id' => $item->product_id,
@@ -395,7 +588,6 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Create order coupons
         foreach ($cart->coupons as $coupon) {
             $order->coupons()->create([
                 'coupon_id' => $coupon->id,

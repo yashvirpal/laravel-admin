@@ -33,6 +33,7 @@ return [
         'razorpay',
         'payu',
         'cod',
+        'phonepe'
     ],
     'shipping_methods' => [
         'flat_rate',

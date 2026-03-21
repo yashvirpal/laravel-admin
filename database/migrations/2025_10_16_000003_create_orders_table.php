@@ -37,7 +37,8 @@ return new class extends Migration {
             // Shipping & Payment
             $table->string('shipping_method')->nullable();
             $table->string('payment_method')->nullable();
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->string('transaction_id')->nullable();
+            $table->enum('payment_status', ['pending', 'initiated', 'paid', 'failed', 'refunded'])->default('pending');
 
             // Order status
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled', 'refunded'])->default('pending');

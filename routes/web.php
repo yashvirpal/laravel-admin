@@ -3,8 +3,10 @@
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\PhonePeWebhookController; 
 use App\Http\Controllers\Api\GeoLocationController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,15 +39,7 @@ Route::prefix('products')->group(function () {
         ->where('categories', '.*') // catch nested categories
         ->name('products.list');
 });
-// Route::prefix('cart')->group(function () {
-//     //Route::get('/', [HomeController::class, 'index'])->name('cart.index');
 
-//     Route::post('add/{product}', [CartController::class, 'add'])->name('cart.add');
-//     Route::post('update/{product}', [CartController::class, 'update'])->name('cart.update');
-//     Route::delete('remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
-//     Route::get('mini', [CartController::class, 'mini'])->name('cart.mini');
-//     Route::get('/cart/product-qty/{product}', [CartController::class, 'productQty'])->name('cart.productQty');
-// });
 
 
 
@@ -69,6 +63,10 @@ Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::post('/process', [CheckoutController::class, 'checkOut'])->name('process');
 });
 
+Route::post('/phonepe/webhook',  [PhonePeWebhookController::class, 'handle'])->name('payment.webhook');
+Route::get('/phonepe/callback',  [CheckoutController::class, 'paymentCallback'])->name('payment.callback'); // ✅ GET not POST
+
+
 
 
 
@@ -84,10 +82,8 @@ Route::prefix('blog')->group(function () {
 });
 //Route::post('/products/filter', [ProductController::class, 'filter'])->name('products.filter');
 Route::get('/wishlistcount', [WishlistController::class, 'count'])->name('wishlist.count');
+Route::post('/add-review', [HomeController::class, 'AddReview'])->name('add.review');
 
-
-Route::post('/checkout/login', [CheckoutController::class, 'login'])->name('checkoutLogin');
-Route::post('/checkout/create-order', [CheckoutController::class, 'checkOut'])->name('createOrder');
 
 
 Route::post('/contact-form-submit', [HomeController::class, 'contactFormSubmit'])->name('contact.submit');
@@ -95,6 +91,7 @@ Route::post('/newsletter/subscribe', [HomeController::class, 'newsletterSubscrib
 Route::get('/sitemap.xml', [HomeController::class, 'sitemapXML'])->name('sitemapxml');
 
 Route::get('/api/geo/country', [GeoLocationController::class, 'getCountry'])->name('api.geo.country');
+
 
 
 
