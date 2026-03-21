@@ -366,8 +366,13 @@ class ProfileController extends Controller
     public function orderDetail(Order $order)
     {
         $this->authorize('view', $order);
+        $order->load(['items.product', 'items.variant', 'transactions', 'coupons', 'shippingAddress', 'billingAddress',]);
 
-        $order->load(['items.product', 'items.variant', 'transactions', 'coupons']);
+        // dd([
+        //     'order_id' => $order->id,
+        //     'transaction_count' => $order->transactions->count(),
+        //     'transactions' => $order->transactions->toArray(),
+        // ]);
 
         return view('profile.orders.show', compact('order'));
     }
