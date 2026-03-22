@@ -131,7 +131,7 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            return redirect()->route('checkout.index');
+            return redirect()->route('order-failed');
 
         } catch (ValidationException $e) {
             if ($request->ajax()) {
@@ -323,8 +323,7 @@ class CheckoutController extends Controller
 
                 $order->update(['payment_status' => 'failed']);
 
-                return redirect()->route('checkout.index')
-                    ->with('error', 'Payment could not be verified. Please try again.');
+                return redirect()->route('order-failed')->with('error', 'Payment could not be verified. Please try again.');
             }
 
             // ✅ Verify with PhonePe
@@ -356,14 +355,12 @@ class CheckoutController extends Controller
             }
 
             if ($state === 'PENDING') {
-                return redirect()->route('checkout.index')
-                    ->with('error', 'Payment is pending. Please wait or contact support.');
+                return redirect()->route('order-failed')->with('error', 'Payment is pending. Please wait or contact support.');
             }
 
             $order->update(['payment_status' => 'failed']);
 
-            return redirect()->route('checkout.index')
-                ->with('error', 'Payment failed. Please try again.');
+            return redirect()->route('order-failed')->with('error', 'Payment failed. Please try again.');
 
         } catch (\Exception $e) {
             Log::error('PhonePe callback error', [
@@ -371,8 +368,7 @@ class CheckoutController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->route('checkout.index')
-                ->with('error', 'Something went wrong. Please contact support.');
+            return redirect()->route('order-failed')->with('error', 'Something went wrong. Please contact support.');
         }
     }
 
