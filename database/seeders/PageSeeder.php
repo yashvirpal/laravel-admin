@@ -56,6 +56,7 @@ class PageSeeder extends Seeder
             'shop' => 'shop',
             'category' => 'category',
             '404'=>'404',
+            'search'=>'search',
         ];
 
         foreach ($pages as $title) {

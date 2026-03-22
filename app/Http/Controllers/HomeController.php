@@ -30,7 +30,8 @@ class HomeController extends Controller
     public function __construct(
         protected CartService $cartService,
         protected WishlistService $wishlist
-    ) {}
+    ) {
+    }
 
     public function index()
     {
@@ -83,7 +84,7 @@ class HomeController extends Controller
             ->take(2)
             ->get();
 
-        $globalSectionFirst  = $globalSections->first();
+        $globalSectionFirst = $globalSections->first();
         $globalSectionSecond = $globalSections->skip(1)->first();
 
         $customizeBracelet = Product::active()
@@ -121,10 +122,10 @@ class HomeController extends Controller
 
         return match ($template) {
             'cart', 'checkout' => $this->renderCartPage($page, $template),
-            'wishlist'         => $this->renderWishlistPage($page, $template),
-            'shop'             => $this->renderShopPage($page, $template),
-            'auth'             => $this->renderAuthPage($page),
-            default            => view("frontend.$template", compact('page')),
+            'wishlist' => $this->renderWishlistPage($page, $template),
+            'shop' => $this->renderShopPage($page, $template),
+            'auth' => $this->renderAuthPage($page),
+            default => view("frontend.$template", compact('page')),
         };
     }
 
@@ -132,7 +133,7 @@ class HomeController extends Controller
     {
         $cart = $this->cartService->getCart(auth()->id(), session()->getId());
 
-        $billingAddress  = null;
+        $billingAddress = null;
         $shippingAddress = null;
 
         if (auth()->check()) {
@@ -178,20 +179,21 @@ class HomeController extends Controller
 
     public function search(Request $request)
     {
-        $query    = $request->input('q');
+        $page = Page::where('slug', 'search')->first();
+        $query = $request->input('q');
         $products = Product::where('title', 'like', "%{$query}%")->paginate(12);
         $products = $this->wishlist->attachWishlistFlag($products);
 
-        return view('frontend.search', compact('products', 'query'));
+        return view('frontend.search', compact('products', 'query', 'page'));
     }
 
     public function productList($categories = null)
     {
-        $segments     = $categories ? explode('/', $categories) : [];
+        $segments = $categories ? explode('/', $categories) : [];
         $categorySlug = end($segments) ?: null;
 
         $category = ProductCategory::active()->where('slug', $categorySlug)->firstOrFail();
-        $filters  = $this->filterData();
+        $filters = $this->filterData();
 
         return view('frontend.product-category', compact('category', 'filters', 'segments'));
     }
@@ -203,7 +205,7 @@ class HomeController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $categoryIds     = $product->categories->pluck('id');
+        $categoryIds = $product->categories->pluck('id');
         $relatedProducts = Product::active()
             ->whereHas('categories', function ($q) use ($categoryIds) {
                 $q->whereIn('product_categories.id', $categoryIds);
@@ -217,11 +219,11 @@ class HomeController extends Controller
 
     public function blogList($categories = null)
     {
-        $segments     = $categories ? explode('/', $categories) : [];
+        $segments = $categories ? explode('/', $categories) : [];
         $categorySlug = end($segments) ?: null;
 
         $category = BlogCategory::where('slug', $categorySlug)->first();
-        $posts    = $category
+        $posts = $category
             ? $category->posts()->paginate(10)
             : Post::paginate(10);
 
@@ -260,7 +262,7 @@ class HomeController extends Controller
 
     private function generateXml($pages, $categories, $articles): string
     {
-        $xml  = '<?xml version="1.0" encoding="UTF-8"?>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
 
         foreach ($pages as $page) {
@@ -381,28 +383,28 @@ class HomeController extends Controller
         }
 
         match ($request->sort) {
-            'popular'    => $query->orderByDesc('views'),
-            'name-asc'   => $query->orderBy('title'),
-            'name-desc'  => $query->orderByDesc('title'),
-            'price-low'  => $query->orderByRaw('COALESCE(sale_price, regular_price) ASC'),
+            'popular' => $query->orderByDesc('views'),
+            'name-asc' => $query->orderBy('title'),
+            'name-desc' => $query->orderByDesc('title'),
+            'price-low' => $query->orderByRaw('COALESCE(sale_price, regular_price) ASC'),
             'price-high' => $query->orderByRaw('COALESCE(sale_price, regular_price) DESC'),
-            default      => $query->latest(),
+            default => $query->latest(),
         };
 
         $products = $query->paginate(12, ['*'], 'page', $request->page);
 
         try {
             return response()->json([
-                'html'    => view('components.frontend.product-list', compact('products'))->render(),
-                'count'   => $products->count(),
+                'html' => view('components.frontend.product-list', compact('products'))->render(),
+                'count' => $products->count(),
                 'hasMore' => $products->hasMorePages(),
             ]);
         } catch (\Throwable $e) {
             return response()->json([
-                'error'   => true,
+                'error' => true,
                 'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ], 500);
         }
     }
@@ -411,7 +413,7 @@ class HomeController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'values'     => 'required|array',
+            'values' => 'required|array',
         ]);
 
         $product = Product::findOrFail($request->product_id);
@@ -427,17 +429,17 @@ class HomeController extends Controller
         }
 
         $regularPrice = $variant->regular_price ?? $product->regular_price;
-        $salePrice    = $variant->sale_price;
+        $salePrice = $variant->sale_price;
 
         return response()->json([
-            'found'             => true,
-            'variant_id'        => $variant->id,
-            'regular_price'     => $regularPrice,
-            'sale_price'        => $salePrice,
+            'found' => true,
+            'variant_id' => $variant->id,
+            'regular_price' => $regularPrice,
+            'sale_price' => $salePrice,
             'regular_formatted' => currencyformat($regularPrice),
-            'sale_formatted'    => $salePrice ? currencyformat($salePrice) : null,
-            'stock'             => $variant->stock ?? 0,
-            'sku'               => $variant->sku,
+            'sale_formatted' => $salePrice ? currencyformat($salePrice) : null,
+            'stock' => $variant->stock ?? 0,
+            'sku' => $variant->sku,
         ]);
     }
 
@@ -445,10 +447,10 @@ class HomeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|integer',
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email',
-            'rating'     => 'required|integer|min:1|max:5',
-            'review'     => 'required|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -475,9 +477,9 @@ class HomeController extends Controller
     public function contactFormSubmit(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'    => 'required',
-            'phone'   => 'required',
-            'email'   => 'required|email:rfc,dns',
+            'name' => 'required',
+            'phone' => 'required',
+            'email' => 'required|email:rfc,dns',
             'message' => 'required|min:5',
         ]);
 
@@ -495,8 +497,8 @@ class HomeController extends Controller
             });
 
             return response()->json([
-                'status'       => true,
-                'message'      => 'Thanks for reaching out! We\'ll get back to you soon.',
+                'status' => true,
+                'message' => 'Thanks for reaching out! We\'ll get back to you soon.',
                 'redirect_url' => route('page', 'thank-you'),
             ]);
         } catch (\Exception $e) {
@@ -522,7 +524,7 @@ class HomeController extends Controller
             });
 
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Subscription successful! You\'ll start receiving updates soon.',
             ]);
         } catch (\Exception $e) {
