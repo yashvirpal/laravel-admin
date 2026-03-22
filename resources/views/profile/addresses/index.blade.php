@@ -16,7 +16,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h2 class="page-title mb-0">Addresses</h2>
 
-                                <a href="{{ route('profile.addresses.create') }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('profile.addresses.create') }}" class="btn mybtn">
                                     + Add New Address
                                 </a>
                             </div>

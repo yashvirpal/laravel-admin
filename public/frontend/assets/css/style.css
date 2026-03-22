@@ -102,6 +102,7 @@ p {
 .btn:hover {
     background: #1cab6a;
     color: #fff;
+    border-color: #1cab6a;
 }
 
 .section-title {
@@ -493,7 +494,7 @@ div#category .item {
     margin-left: 20px;
 }
 
-/* ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Border OUTSIDE hexagon */
+/* ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ Border OUTSIDE hexagon */
 .hex-wrap {
     position: absolute;
     top: 0;
@@ -557,7 +558,7 @@ div#category .item {
     font-weight: 500;
 }
 
-/* ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Animation */
+/* ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ Animation */
 @keyframes borderAnim {
     0% {
         background-position: 0% 50%;
@@ -729,7 +730,7 @@ section.bracelets-sec {
     border-radius: 10px;
 }
 
-.product-box figure:before {
+.product-box figure a:after {
     position: absolute;
     content: "";
     background: #00000087;
@@ -1554,18 +1555,15 @@ mega menu css start here
         display: block;
     }
 
-    .mobile-arrow {
-        /* display: none; */
-    }
+
 }
 
 /* Mobile submenu */
-@media(max-width:991px) {
+@media(max-width:993px) {
     .products-submenu {
         position: relative;
         width: 100%;
         margin-top: 10px;
-        border: 1px solid #eee;
         display: none;
         box-shadow: none;
     }
@@ -2105,7 +2103,7 @@ cart deopdown css start here
     left: auto;
     width: 350px;
     margin: 0;
-    transform: translate(340px);
+    transform: translate(350px);
     transition: transform 0.2s ease-in-out 0s;
     background-color: #fff;
     z-index: 1050;
@@ -2242,7 +2240,7 @@ cart deopdown css start here
     position: relative;
     border: 1px solid #ccc;
     width: 80px;
-    border-radius: 50px !important;
+    /* border-radius: 50px !important; */
 }
 
 .product-image-container a img {
@@ -2639,12 +2637,138 @@ products details  page css start here
     box-shadow: none;
 }
 
-.quantity-box button {
-    background: transparent;
-    border-color: #afacac;
-    padding: 12px 20px;
-    color: #000000;
+/* ===== Quantity Wrapper ===== */
+.quantity-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* ===== Quantity Box ===== */
+.qty-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
     border-radius: 50px;
+    overflow: hidden;
+    background: #fff;
+}
+#buyNow2:hover {
+    border-color: #157347;
+}
+
+.btn-box button:first-child:hover {
+    background: #ffaa3d;
+    color: #fff;
+    border-color: #ffaa3d !important;
+}
+/* Buttons + / - */
+.qty-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0px;
+}
+
+.qty-btn:hover {
+    background: #dddbd800;
+    color: #000000;
+}
+
+/* Input field */
+.qty-input {
+    width: 60px;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+    outline: none;
+}
+
+/* Remove arrows (Chrome) */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove arrows (Firefox) */
+.qty-input {
+    -moz-appearance: textfield;
+}
+
+/* ===== Buttons Section ===== */
+.btn-box {
+    display: flex;
+    gap: 10px;
+}
+
+/* Add to Cart */
+.addCart2 {
+    padding: 10px 18px;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.addCart2:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Buy Now */
+#buyNow2 {
+    padding: 10px 18px;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: 0.3s;
+    border-color: #ffaa3d;
+}
+
+#buyNow2:hover {
+    background-color: #157347;
+    transform: translateY(-2px);
+}
+
+/* Wishlist Button */
+.btn-outline-success {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    border-color: #ffaa3d;
+    color: #ffaa3d;
+}
+
+.btn-outline-success:hover {
+    background: #28a745;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 576px) {
+    .quantity-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-box {
+        width: 100%;
+    }
+
+    .btn-box button {
+        width: 100%;
+    }
 }
 
 .quantity-box input:focus {
@@ -2652,7 +2776,7 @@ products details  page css start here
     border-color: #8b8b8b;
 }
 
-.quantity-group {}
+
 
 
 
@@ -2669,11 +2793,23 @@ products details  page css start here
 .btn-box button:last-child {
     background: #ffaa3d;
     color: #fff;
+    border-color: #ffaa3d;
 }
 
+
+.btn-box button {
+    border-radius: 50px;
+    padding: 10px 20px;
+}
+
+
+.btn-box button:last-child {
+    border-color: #ffaa3d !important;
+}
 .btn-box button:last-child:hover {
     background: #38d18b;
     color: #ffffff;
+    border-color: #1cab6a !important;
 }
 
 .btn-box {
@@ -2984,6 +3120,7 @@ span.color-dot.active {
 .qty-input {
     border-color: #afacac;
     border: transparent;
+    background: transparent;
 }
 
 .pt-0 {
@@ -3074,7 +3211,7 @@ span.color-dot.active {
 .btn-box button:first-child {
     background: transparent;
     color: #ffaa3d;
-    box-shadow: inset 0 0 0 0.8px #ffaa3d;
+    border-color: #ffaa3d;
 }
 
 .quantity-group button {
@@ -3287,18 +3424,19 @@ p.taxes {
     padding: 12px 51px !important;
     border: none;
     transition: 0.3s;
+    color: #fff;
 }
 
 .btn-review-submit:hover {
     background: #38d18b;
+    color: #fff;
 }
 
 .form-control {
     border-radius: 4px;
     border: 1px solid #bfbfbf;
-    padding: 13px 14px;
+    padding: 10px 14px;
     font-size: 16px;
-    border-radius: 50px;
 }
 
 .form-control:focus {
@@ -4113,6 +4251,7 @@ section.login-sec {
     min-width: 320px;
     box-shadow: rgb(0 0 0 / 10%) 0px 3px 8px;
     border-radius: 10px;
+    align-items: center;
 }
 
 .login-container .logo svg {
@@ -4132,7 +4271,7 @@ section.login-sec {
 }
 
 .login-container .login-form .login-form-inner {
-    max-width: 80%;
+    max-width: 90%;
     width: 100%;
 }
 
@@ -4178,18 +4317,18 @@ section.login-sec {
     position: relative;
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .login-container .login-form .login-form-group label {
     font-size: 14px;
     font-weight: 500;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .login-container .login-form .login-form-group input {
-    padding: 13px 20px;
+    padding: 11px 20px;
     box-sizing: border-box;
     border: 1px solid #d6d6d6;
     border-radius: 50px;
@@ -4291,7 +4430,7 @@ section.login-sec {
 .login-container .login-form .login-cta {
     color: #fff;
     text-decoration: none;
-    margin: 20px 0 20px;
+    margin: 15px 0 15px;
     background: #f5b901;
 }
 
@@ -4334,13 +4473,14 @@ section.login-sec {
 .login-container .login-form .login-form-inner h1 {
     margin-bottom: 15px;
     margin-top: 0px;
+    font-size: 28px;
 }
 
 
 
 @media screen and (max-width: 767px) {
     .login-container {
-        height: 100vh;
+        height: auto;
     }
 }
 
@@ -5264,7 +5404,7 @@ account page css end here
 .product-tabs {
     display: flex;
     gap: 10px;
-    /* ðŸ‘ˆ GAP yahan se aayega */
+    /* Ã°Å¸â€˜Ë† GAP yahan se aayega */
     margin-bottom: 25px;
 }
 
@@ -5297,7 +5437,7 @@ account page css end here
 
 /* Reviews Count */
 .product-tab-btn .count {
-    background: rgb(92 92 92 / 25%);
+    background: rgb(255 255 255);
     color: #000000;
     font-size: 12px;
     padding: 2px 7px;
@@ -5359,4 +5499,118 @@ account page css end here
     to {
         transform: rotate(360deg);
     }
+}
+.bulk-order-enquiry p a {
+    color: #ffaa3d !important;
+}
+
+.tab-content-box .accordion-item .accordion-button:not(.collapsed) {
+    background: no-repeat;
+    color: #000;
+}
+
+.tab-content-box .accordion-item button:focus {
+    box-shadow: none;
+}
+
+.tab-content-box .accordion-item .accordion-body {
+    background: #cccccc26;
+}
+
+.product-box .product-rating .rating-starss {
+    color: #ffaa3d !important;
+}
+
+
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+
+.upload-box {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border: 1px solid #bfbfbf;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+    flex-direction: row;
+    gap: 10px;
+}
+
+
+.upload-box:hover {
+    border-color: #bfbfbf;
+    background: #ffaa3d00;
+}
+
+
+.upload-icon {
+    font-size: 20px;
+}
+
+
+.upload-text {
+    font-weight: 500;
+    color: #333;
+}
+
+
+.file-name {
+    font-size: 13px;
+    color: #777;
+    margin-top: 5px;
+}
+section.account-sec .main-content .table-responsive td span.badge {
+    background: #ffc107 !important;
+}
+.form-switch input.form-check-input:focus {
+    box-shadow: none !important;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #ffaa3d;
+    border-color: #ffaa3d;
+}
+
+
+.form-switch .form-check-input:focus {
+    box-shadow: none;
+}
+
+section.account-sec .main-content .form-check-input:checked {
+    background-color: #ffaa3d !important;
+    border-color: #ffaa3d !important;
+}
+section.account-sec .main-content .form-check-input:checked:focus {
+box-shadow: none;
+}
+
+section.account-sec .main-content #wishlistPage  td.text-end {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: space-around;
+    padding: 20px;
+}
+section.account-sec .main-content #wishlistPage  .btn-outline-danger {
+    padding: 10px;
+    border-radius: 50px;
+    width: 40px;
+    height: 40px;
+    line-height: 25px;
+}
+footer .col-md-5 ul li {
+    float: left;
+    width: 50%;
+}
+.table>:not(:first-child) {
+    border-top: 1px solid rgb(255 255 255) !important;
+}
+section.cart-page-sec {
+    padding: 50px 0px;
 }

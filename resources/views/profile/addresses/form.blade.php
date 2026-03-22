@@ -17,8 +17,8 @@
                                     {{ isset($address) ? 'Edit Address' : 'Add New Address' }}
                                 </h2>
 
-                                <a href="{{ route('profile.addresses') }}" class="btn btn-outline-secondary btn-sm">
-                                    Back
+                               <a href="{{ route('profile.addresses') }}" class="btn mybtn">
+                                    <i class="fas fa-long-arrow-alt-left"></i> Back
                                 </a>
                             </div>
 
@@ -125,7 +125,7 @@
 
                                         </div>
 
-                                        <button type="submit" class="btn btn-primary">
+                                        <button type="submit" class="btn mybtn">
                                             {{ isset($address) ? 'Update Address' : 'Save Address' }}
                                         </button>
 

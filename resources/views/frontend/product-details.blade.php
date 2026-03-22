@@ -134,7 +134,7 @@
                         <div class="quantity-box pro-h">
                             <label class="fw-bold">Quantity:</label>
                             <div class="quantity-wrap">
-                                <div class="gap-3 mt-1">
+                                <div class="gap-3">
                                     <div class="qty-wrapper" id="qtywrapper{{ $product->id }}">
                                         <button type="button" class="qty-btn" data-type="minus">-</button>
                                         <input type="number" class="qty-input" value="1" min="1" max="100">
@@ -169,8 +169,9 @@
                                         </button>
                                     @endif
                                 </div>
+                                 <x-frontend.add-to-wishlist :product="$product" :isSingle="true" />
                             </div>
-                            <x-frontend.add-to-wishlist :product="$product" :isSingle="true" />
+                           
                         </div>
 
                         <!-- ds-memonics -->

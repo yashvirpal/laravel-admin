@@ -55,7 +55,7 @@
                         <h3>Our Products</h3>
                         <ul class="list-unstyled row">
                             @foreach($ourProductsFooterMenu as $category)
-                                <li class="col-6">
+                                <li class="col-12">
                                     <a href="{{ route('products.list', $category->slug) }}">
                                         <i class="fas fa-angle-double-right"></i> {{ $category->title }}
                                     </a>
