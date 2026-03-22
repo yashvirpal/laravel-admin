@@ -23,7 +23,7 @@
                                 @method('PUT')
 
                                 <div class="row justify-content-center">
-                                    <div class="col-md-5">
+                                    <div class="12">
 
                                         <div class="mb-3">
                                             <label class="form-label">Current Password</label>

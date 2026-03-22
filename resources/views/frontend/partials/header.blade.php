@@ -83,12 +83,108 @@
                                 </ul>
                             </div>
                         </div>
+                        <div class="menu-wrapper d-lg-none">
+                            <nav class="navbar  navbar-expand-xl navbar-light">
+                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                                    aria-expanded="false" aria-label="Toggle navigation">
+                                    <span class="navbar-toggler-icon"></span>
+                                </button>
+                                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                    <div class="left-menu-wrap">
+                                        <div class="left-logo">
+                                            <figure>
+                                                <a href="{{ route('home') }}">
+                                                    <img src="{{ asset('frontend/assets/images/logo.webp') }}" alt="logo">
+                                                </a>
+                                            </figure>
+                                        </div>
+                                        <div class="menu-close text-end ">
+                                            <button id="closeMenu" type="button">✕</button>
+                                        </div>
+                                    </div>
+                                    <ul class="navbar-nav mx-auto">
+                                        <li class="nav-item products-parent position-relative">
+                                            <a href="{{ route('page', 'shop') }}" class="products-toggle">
+                                                <i class="fas fa-box"></i> Shops
+                                                <i class="fas fa-chevron-down mobile-arrow"></i>
+                                            </a>
+
+                                            <ul class="products-submenu">
+                                                @foreach($directCategoriesHeaderMenu as $category)
+                                                    <li class="">
+                                                        <a href="{{ route('products.list', $category->full_slug) }}">
+                                                            {{ $category->title }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </li>
+
+                                        @foreach($megaCategoriesHeaderMenu as $category)
+
+                                            <li class="nav-item zodiac-parent">
+                                                <a href="{{ route('products.list', $category->slug) }}">
+                                                    @if ($category->id == 1)
+                                                        <i class="fas fa-bullseye"></i>
+                                                    @elseif ($category->id == 8)
+                                                        <i class="fas fa-sun"></i>
+                                                    @endif
+                                                    {{ $category->title }}
+                                                    <i class="fas fa-chevron-down mobile-arrow"></i>
+                                                </a>
+
+                                                <div class="mega-menu">
+                                                    <div class="zodiac-grid">
+                                                        @foreach($category->children as $child)
+                                                            <div class="z-item">
+                                                                <a href="{{ route('products.list', $child->full_slug) }}">
+                                                                    {{-- {{ $child->image }}
+                                                                    {{ $child->image_url }} --}}
+                                                                    <img src="{{ $child->image ? $child->image_url : asset('frontend/images/category.webp') }}"
+                                                                        alt="{{ $child->image_alt }}">
+                                                                    <p>{{ $child->title }}</p>
+                                                                </a>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                        @foreach($categoryHeaderMenu as $category)
+                                            <li class="nav-item">
+                                                <a href="{{ route('products.list', $category->slug) }}">
+                                                    @if ($category->id == 21)
+                                                        <i class="fas fa-gift"></i>
+                                                    @elseif ($category->id == 22)
+                                                        <i class="fas fa-om"></i>
+                                                    @endif
+                                                    {{ $category->title }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                        <li class="nav-item">
+                                            <a href="{{ route('products.details', 'customised-bracelets') }}"><i
+                                                    class="fas fa-ring"></i> Customised Bracelets</a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('products.details', 'membership-plans') }}"><i
+                                                    class="fas fa-id-card"></i> Membership Plans</a>
+                                        </li>
+
+                                    </ul>
+
+                                </div>
+                            </nav>
+                            <div class="menu-overlay" id="menuOverlay"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="bottom-header">
+    <div class="bottom-header d-none d-lg-block">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">

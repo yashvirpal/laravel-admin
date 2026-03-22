@@ -32,7 +32,8 @@ class PageSeeder extends Seeder
             'Forgot Password',
             'Reset Password',
             'Shop',
-            'Category'
+            'Category',
+            'Order Failed'
         ];
 
         // Template map (from your config or define inline)
@@ -55,6 +56,9 @@ class PageSeeder extends Seeder
             'reset-password' => 'auth',
             'shop' => 'shop',
             'category' => 'category',
+            '404'=>'404',
+            'search'=>'search',
+            'order-failed'=>'order-failed'
         ];
 
         foreach ($pages as $title) {

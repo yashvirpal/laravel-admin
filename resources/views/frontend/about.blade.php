@@ -9,8 +9,12 @@
     <section class="contact-sec">
         <div class="container my-5">
             <div class="row g-4">
-                {!! $page->description !!}
+                    {!! $page->description !!}
             </div>
         </div>
     </section>
 @endsection
+
+@push('scripts')
+
+@endpush

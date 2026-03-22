@@ -12,7 +12,7 @@
                 If you didn't log in, please log in first.
             </p> -->
 
-            <form action="{{ route('checkoutLogin') }}" id="checkoutLoginForm" method="post"
+            <form action="{{ route('checkout.login') }}" id="checkoutLoginForm" method="post"
                 class="d-flex flex-wrap justify-between align-items-center gap-2">
                 <div class="input-field">
                     <label>Email</label>

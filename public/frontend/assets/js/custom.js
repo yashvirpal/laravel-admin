@@ -123,7 +123,9 @@ $('.products-silder').owlCarousel({
   smartSpeed: 1600,
   responsive: {
     0: { items: 1 },
-    600: { items: 3 },
+    400: { items: 2 },
+    600: { items: 2 },
+    800: { items: 3 },
     1000: { items: 4 }
   }
 });
@@ -141,7 +143,7 @@ $('#instagram').owlCarousel({
   autoplayTimeout: 3000,
   smartSpeed: 1600,
   responsive: {
-    0: { items: 1 },
+    0: { items: 2 },
     600: { items: 3 },
     1000: { items: 5 }
   }
@@ -153,29 +155,26 @@ $('#instagram').owlCarousel({
  ***************************************/
 document.addEventListener("DOMContentLoaded", () => {
 
-  const pToggle = document.querySelector(".products-toggle");
-  const pMenu = document.querySelector(".products-submenu");
-
-  if (pToggle && pMenu) {
-    pToggle.addEventListener("click", (e) => {
+  // PRODUCTS MENU
+  document.querySelectorAll(".products-toggle").forEach(toggle => {
+    toggle.addEventListener("click", function (e) {
       if (window.innerWidth < 992) {
         e.preventDefault();
-        pMenu.classList.toggle("open");
+        let menu = this.nextElementSibling;
+        menu.classList.toggle("open");
       }
     });
-  }
+  });
 
-  const zToggle = document.querySelector(".zodiac-toggle");
-  const zMenu = document.querySelector(".mega-menu");
-
-  if (zToggle && zMenu) {
-    zToggle.addEventListener("click", (e) => {
+  document.querySelectorAll(".zodiac-parent > a").forEach(toggle => {
+    toggle.addEventListener("click", function (e) {
       if (window.innerWidth < 992) {
         e.preventDefault();
-        zMenu.classList.toggle("open");
+        let menu = this.nextElementSibling;
+        menu.classList.toggle("open");
       }
     });
-  }
+  });
 
 });
 
@@ -528,3 +527,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 //document.addEventListener('DOMContentLoaded', wishlistCount);
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menu = document.getElementById('navbarSupportedContent');
+    const overlay = document.getElementById('menuOverlay');
+    const toggler = document.querySelector('.navbar-toggler');
+    const closeBtn = document.getElementById('closeMenu');
+
+    // OPEN MENU
+    toggler.addEventListener('click', function () {
+        overlay.classList.add('active');
+    });
+
+    // CLOSE BUTTON
+    closeBtn.addEventListener('click', function () {
+        menu.classList.remove('show');
+        overlay.classList.remove('active');
+    });
+
+    // CLICK OVERLAY CLOSE
+    overlay.addEventListener('click', function () {
+        menu.classList.remove('show');
+        overlay.classList.remove('active');
+    });
+
+});

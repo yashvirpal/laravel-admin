@@ -28,15 +28,13 @@
                             <div class="carousel-caption">
                                 <div class="row">
                                     <div class="col-md-9">
-                                        <div class="container-fluid">
-                                            <h2>{{ $item->title ?? "" }} </h2>
-                                            <h3>{{ $item->subtitle ?? "" }} </h3>
-                                            @if($item->button_text)
-                                                <a class="btn mybtn" href="{{ $item->button_link ?? "" }}">
-                                                    {{ $item->button_text ?? "Call Us Now" }}
-                                                </a>
-                                            @endif
-                                        </div>
+                                        <h2>{{ $item->title ?? "" }} </h2>
+                                        <h3>{{ $item->subtitle ?? "" }} </h3>
+                                        @if($item->button_text)
+                                            <a class="btn mybtn" href="{{ $item->button_link ?? "" }}">
+                                                {{ $item->button_text ?? "Call Us Now" }}
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

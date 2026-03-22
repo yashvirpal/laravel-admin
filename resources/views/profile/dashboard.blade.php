@@ -21,14 +21,14 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="stats-card">
                                         <i class="fas fa-shopping-cart"></i>
-                                        <div class="number">{{ $total_orders ?? 0 }}</div>
+                                        <div class="number">{{ $stats['total_orders'] ?? 0 }}</div>
                                         <div class="label">Total orders</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="stats-card">
                                         <i class="fas fa-money-bill"></i>
-                                        <div class="number">{{ currencyformat($total_spent ?? 0)}}</div>
+                                        <div class="number">{{ currencyformat($stats['total_spent'] ?? 0)}}</div>
                                         <div class="label">Total Spent</div>
                                     </div>
                                 </div>
