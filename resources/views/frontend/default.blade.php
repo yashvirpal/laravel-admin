@@ -6,5 +6,11 @@
 @endsection
 
 @section('content')
-    <h1>Default</h1>
+    <section class="contact-sec">
+        <div class="container my-5">
+            <div class="row g-4">
+                {!! $page->description !!}
+            </div>
+        </div>
+    </section>
 @endsection

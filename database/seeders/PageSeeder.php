@@ -55,6 +55,7 @@ class PageSeeder extends Seeder
             'reset-password' => 'auth',
             'shop' => 'shop',
             'category' => 'category',
+            '404'=>'404',
         ];
 
         foreach ($pages as $title) {
