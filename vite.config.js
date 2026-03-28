@@ -16,7 +16,7 @@ export default defineConfig({
     ],
     server: {
         host: '0.0.0.0',   // 🔥 REQUIRED
-        port: 5174,
+        port: 5173,
         strictPort: true,
         hmr: {
             host: 'localhost', // avoid IPv6
