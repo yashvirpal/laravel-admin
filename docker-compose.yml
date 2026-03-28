@@ -1,26 +1,174 @@
 services:
+
   app:
     build:
       context: ./docker/php
     container_name: laravel_admin_app
     working_dir: /var/www/html
+    restart: unless-stopped
     volumes:
-      - ./myapp:/var/www/html
+      - ./:/var/www/html
+    networks:
+      - laravel
+    depends_on:
+      - mysql   # ✅ fixed: was "db", but service is named "mysql"
+      - redis
 
   web:
     image: nginx:alpine
     container_name: laravel_admin_nginx
+    restart: unless-stopped
     ports:
       - "8000:80"
     volumes:
-      - ./myapp:/var/www/html
+      - ./:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
+    networks:
+      - laravel
+
   node:
-    image: node:20
+    image: node:20-alpine
     container_name: laravel_admin_node
     working_dir: /var/www/html
     volumes:
-      - ./myapp:/var/www/html
-    command: sh -c "npm install && npm run build"
+      - ./:/var/www/html
+      - /var/www/html/node_modules
+    ports:
+      - "5173:5173"  
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"  # ✅ explicit port
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel_admin_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - laravel
+    healthcheck:   # ✅ added: so app waits until MySQL is actually ready
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------- REDIS ----------------
+  redis:
+    image: redis:alpine
+    container_name: laravel_admin_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - laravel
+    healthcheck:   # ✅ added: so app waits until Redis is actually ready
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis_ui:
+    image: rediscommander/redis-commander
+    container_name: laravel_admin_redis_ui
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - laravel
+
+  # ---------------- MONGO ----------------
+  mongo:
+    image: mongo
+    container_name: laravel_admin_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - laravel
+
+  mongo_ui:
+    image: mongo-express
+    container_name: laravel_admin_mongo_ui
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+    depends_on:
+      - mongo
+    networks:
+      - laravel
+
+  # ---------------- POSTGRES ----------------
+  postgres:
+    image: postgres:15
+    container_name: laravel_admin_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - laravel
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: laravel_admin_pgadmin
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres
+    networks:
+      - laravel
+
+  # ---------------- PHPMYADMIN ----------------
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_admin_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8084:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - mysql
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  db_data:
+  mongo_data:
+  pg_data:
