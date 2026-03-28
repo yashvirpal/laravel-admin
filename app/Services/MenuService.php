@@ -15,13 +15,13 @@ class MenuService
 
         return Cache::remember("header_menu", 3600, function ()  {
             $categories = ProductCategory::query()
-                ->select('id', 'name', 'slug', 'parent_id')
+                ->select('id', 'title', 'slug', 'parent_id')
                 ->active()
                
                 ->whereNull('parent_id')
                 ->with([
                     'children' => function ($q) {
-                        $q->select('id', 'name', 'slug', 'parent_id')
+                        $q->select('id', 'title', 'slug', 'parent_id')
                             ->active();
                     }
                 ])
@@ -55,7 +55,7 @@ class MenuService
             );
 
             $categories = ProductCategory::query()
-                ->select('id', 'name', 'slug', 'parent_id')
+                ->select('id', 'title', 'slug', 'parent_id')
                 ->active()
               
                 ->where('parent_id', 29)
