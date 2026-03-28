@@ -15,7 +15,7 @@ class MenuService
 
         return Cache::remember("header_menu", 3600, function ()  {
             $categories = ProductCategory::query()
-                ->select('id', 'name', 'slug', 'parent_id', 'menuOrder')
+                ->select('id', 'name', 'slug', 'parent_id')
                 ->active()
                
                 ->whereNull('parent_id')
