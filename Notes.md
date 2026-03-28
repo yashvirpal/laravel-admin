@@ -7,6 +7,7 @@ docker exec -it laravel_admin_app chown -R www-data:www-data /var/www/html/datab
 docker exec -it laravel_admin_app chown -R www-data:www-data /var/www/html/storage
 
 docker exec laravel_admin_app php artisan migrate:fresh --seed
+docker exec laravel_admin_app php artisan optimize:clear
 docker exec laravel_admin_node npm run build
 docker exec laravel_admin_node npm update
 
