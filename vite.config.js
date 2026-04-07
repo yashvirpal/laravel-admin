@@ -19,7 +19,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         hmr: {
-            host: 'localhost', // avoid IPv6
+            host: '72.61.174.220', // avoid IPv6
         },
     },
 });
