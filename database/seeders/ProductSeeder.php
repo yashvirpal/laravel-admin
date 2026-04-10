@@ -169,6 +169,7 @@ class ProductSeeder extends Seeder
                         'stock' => rand(10, 100),
                         'is_featured' => rand(0, 1),
                         'status' => true,
+                        'is_special'=>true,
                         'author_id' => $author?->id,
                     ]
                 );

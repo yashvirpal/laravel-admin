@@ -244,7 +244,7 @@
 
 
 
-<div class="card shadow-sm p-3 mb-3">
+<!-- <div class="card shadow-sm p-3 mb-3">
     <h6>Rating</h6>
 
     @for($i = 5; $i >= 1; $i--)
@@ -255,7 +255,7 @@
             </label>
         </div>
     @endfor
-</div>
+</div> -->
 
 {{-- <button type="button" class="btn mybtn mb-3 d-block mx-auto">
     Apply Filter
