@@ -58,7 +58,7 @@
                             <div class="row mb-3" id="variant-attributes">
                                 @foreach ($product->attributes as $attr)
                                     <div class="col-md-6 mb-3">
-                                        <label class="fw-bold">{{ $attr->name }}</label>
+                                        <label class="fw-bold mb-1">{{ $attr->name }}</label>
                                         <select class="variant-select form-select" data-attr="{{ $attr->id }}">
                                             <option value="">Select {{ $attr->name }}</option>
                                             @foreach ($attr->values as $val)
@@ -68,7 +68,7 @@
                                     </div>
                                 @endforeach
                             </div>
-
+                            
                             @php
                                 $min = $product->variants->min('sale_price') ?? $product->variants->min('regular_price');
                                 $max = $product->variants->max('sale_price') ?? $product->variants->max('regular_price');
@@ -111,27 +111,37 @@
 
                         @if ($product->tags->isNotEmpty())
                             <div class="custom_tag_pdp">
-                                <ul>Tags:
+                                <ul><strong>Tags:</strong>
                                     @foreach ($product->tags as $tag)
-                                        <li class="tags">{{ $tag->title }}</li>
+                                        <li class="tagss">{{ $tag->title }}@if(!$loop->last),@endif</li>
                                     @endforeach
                                 </ul>
                             </div>
                         @endif
 
                         @if($product->categories->isNotEmpty())
-                            <div class="product-category-box">
-                                Category:
+                            <div class="custom_tag_pdp product-category-boxx">
+                               <ul><strong> Category:</strong>
                                 @foreach ($product->categories as $category)
-                                    <a href="{{ route('products.list', $category->slug) }}">
-                                        {{ $category->title }}
-                                    </a>@if(!$loop->last),@endif
+                                    <li class="tags"> 
+                                        <a class="text-black" href="{{ route('products.list', $category->slug) }}">
+                                            {{ $category->title }}
+                                        </a>
+                                    </li>
+                                    <!-- @if(!$loop->last),@endif -->
                                 @endforeach
+                                </ul>
                             </div>
                         @endif
 
                         <!-- QUANTITY & ADD TO CART -->
                         <div class="quantity-box pro-h">
+                            @if($product->has_variants)
+                            <div class="my-2">
+                            {{-- <x-frontend.custom-bracelet-form full-width="true" /> --}}
+                            <x-frontend.custom-bracelet-form  />
+                            </div>
+                            @endif
                             <label class="fw-bold">Quantity:</label>
                             <div class="quantity-wrap">
                                 <div class="gap-3">

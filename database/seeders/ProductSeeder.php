@@ -155,6 +155,18 @@ class ProductSeeder extends Seeder
         $categoriesAll = ProductCategory::all();
         $tagsAll = ProductTag::all();
 
+
+        // Attribute: Size
+        $size = ProductAttribute::create(['name' => 'Size', 'slug' => 'size']);
+        $s = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Small', 'slug' => 'small']);
+        $m = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Medium', 'slug' => 'medium']);
+
+        // Attribute: Color
+        $color = ProductAttribute::create(['name' => 'Color', 'slug' => 'color']);
+        $red = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Red', 'slug' => 'red']);
+        $blue = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Blue', 'slug' => 'blue']);
+
+
         for ($i = 1; $i <= 11; $i++) {
             if ($i == 1) {
                 $title = "Customised Bracelets";
@@ -169,7 +181,8 @@ class ProductSeeder extends Seeder
                         'stock' => rand(10, 100),
                         'is_featured' => rand(0, 1),
                         'status' => true,
-                        'is_special'=>true,
+                        'is_special' => true,
+                        'has_variants' => true,
                         'author_id' => $author?->id,
                     ]
                 );
@@ -183,6 +196,24 @@ class ProductSeeder extends Seeder
                 $product->tags()->sync(
                     $tagsAll->random(rand(1, 2))->pluck('id')->toArray()
                 );
+
+                $product->attributes()->attach([$size->id]);
+
+                // Create two variants
+                $v1 = ProductVariant::create([
+                    'product_id' => $product->id,
+                    'sku' => 'CB-S-' . $product->id,
+                    'regular_price' => 399,
+                    'stock' => 20
+                ]);
+                $v1->values()->attach([$s->id]);
+                $v1 = ProductVariant::create([
+                    'product_id' => $product->id,
+                    'sku' => 'CB-M-' . $product->id,
+                    'regular_price' => 599,
+                    'stock' => 20
+                ]);
+                $v1->values()->attach([$m->id]);
             }
             if ($i == 2) {
                 $title = "Membership Plans";
@@ -242,57 +273,49 @@ class ProductSeeder extends Seeder
 
         // Product Variants and Attributes Example
         // Create a product with variants based on attributes like Size and Color
-        $product = Product::create([
-            'title' => 'T-Shirt',
-            'slug' => 't-shirt',
-            'regular_price' => 499,
-            'has_variants' => true,
-            'stock' => 100
-        ]);
+        // $product = Product::create([
+        //     'title' => 'T-Shirt',
+        //     'slug' => 't-shirt',
+        //     'regular_price' => 499,
+        //     'has_variants' => true,
+        //     'stock' => 100
+        // ]);
 
-        // Attribute: Size
-        $size = ProductAttribute::create(['name' => 'Size', 'slug' => 'size']);
-        $s = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Small', 'slug' => 'small']);
-        $m = ProductAttributeValue::create(['attribute_id' => $size->id, 'name' => 'Medium', 'slug' => 'medium']);
 
-        // Attribute: Color
-        $color = ProductAttribute::create(['name' => 'Color', 'slug' => 'color']);
-        $red = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Red', 'slug' => 'red']);
-        $blue = ProductAttributeValue::create(['attribute_id' => $color->id, 'name' => 'Blue', 'slug' => 'blue']);
 
-        // Assign attributes to product
-        $product->attributes()->attach([$size->id, $color->id]);
+        // // Assign attributes to product
+        // $product->attributes()->attach([$size->id, $color->id]);
 
-        // Create two variants
-        $v1 = ProductVariant::create([
-            'product_id' => $product->id,
-            'sku' => 'TS-M-RED',
-            'regular_price' => 499,
-            'stock' => 20
-        ]);
-        $v1->values()->attach([$m->id, $red->id]);
+        // // Create two variants
+        // $v1 = ProductVariant::create([
+        //     'product_id' => $product->id,
+        //     'sku' => 'TS-M-RED',
+        //     'regular_price' => 499,
+        //     'stock' => 20
+        // ]);
+        // $v1->values()->attach([$m->id, $red->id]);
 
-        $v2 = ProductVariant::create([
-            'product_id' => $product->id,
-            'sku' => 'TS-S-BLU',
-            'regular_price' => 449,
-            'stock' => 30
-        ]);
-        $v2->values()->attach([$s->id, $blue->id]);
-        $this->command->info('✅ Product with variants created');
+        // $v2 = ProductVariant::create([
+        //     'product_id' => $product->id,
+        //     'sku' => 'TS-S-BLU',
+        //     'regular_price' => 449,
+        //     'stock' => 30
+        // ]);
+        // $v2->values()->attach([$s->id, $blue->id]);
+        // $this->command->info('✅ Product with variants created');
 
 
         $faker = Faker::create();
         foreach (range(1, 10) as $i) {
-            $productid= rand(1, 10);
+            $productid = rand(1, 10);
             ProductFaq::create([
-                'product_id' =>$productid,
+                'product_id' => $productid,
                 'question' => $faker->sentence(),
                 'answer' => $faker->paragraph(),
             ]);
-            $this->command->info('✅ Product Faq created for '.$productid);
+            $this->command->info('✅ Product Faq created for ' . $productid);
         }
 
-         
+
     }
 }

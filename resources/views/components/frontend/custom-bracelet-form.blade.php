@@ -5,7 +5,7 @@
     $colClass = $fullWidth ? 'col-md-12' : 'col-md-6';
 @endphp
 <div class="customised-form">
-    {!!  $fullWidth ? "<h4>For Energize, We require these details</h4>" : "" !!}
+    {!!  !$fullWidth ? "<h4>For Energize, We require these details</h4>" : "" !!}
     <form>
         <div class="row">
             <div class="{{ $colClass }}">
@@ -32,11 +32,11 @@
                     <textarea></textarea>
                 </div>
             </div>
-            <div class="{{ $colClass }}">
+            <!-- <div class="{{ $colClass }}">
                 <div class="input-group">
                     <button>Submit</button>
                 </div>
-            </div>
+            </div> -->
         </div>
     </form>
 </div>

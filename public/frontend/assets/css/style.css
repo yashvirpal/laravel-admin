@@ -2654,6 +2654,7 @@ products details  page css start here
     overflow: hidden;
     background: #fff;
 }
+
 #buyNow2:hover {
     border-color: #157347;
 }
@@ -2663,6 +2664,7 @@ products details  page css start here
     color: #fff;
     border-color: #ffaa3d !important;
 }
+
 /* Buttons + / - */
 .qty-btn {
     width: 44px;
@@ -2806,6 +2808,7 @@ products details  page css start here
 .btn-box button:last-child {
     border-color: #ffaa3d !important;
 }
+
 .btn-box button:last-child:hover {
     background: #38d18b;
     color: #ffffff;
@@ -5500,6 +5503,7 @@ account page css end here
         transform: rotate(360deg);
     }
 }
+
 .bulk-order-enquiry p a {
     color: #ffaa3d !important;
 }
@@ -5565,9 +5569,11 @@ account page css end here
     color: #777;
     margin-top: 5px;
 }
+
 section.account-sec .main-content .table-responsive td span.badge {
     background: #ffc107 !important;
 }
+
 .form-switch input.form-check-input:focus {
     box-shadow: none !important;
 }
@@ -5586,31 +5592,56 @@ section.account-sec .main-content .form-check-input:checked {
     background-color: #ffaa3d !important;
     border-color: #ffaa3d !important;
 }
+
 section.account-sec .main-content .form-check-input:checked:focus {
-box-shadow: none;
+    box-shadow: none;
 }
 
-section.account-sec .main-content #wishlistPage  td.text-end {
+section.account-sec .main-content #wishlistPage td.text-end {
     display: flex;
     align-items: center;
     gap: 20px;
     justify-content: space-around;
     padding: 20px;
 }
-section.account-sec .main-content #wishlistPage  .btn-outline-danger {
+
+section.account-sec .main-content #wishlistPage .btn-outline-danger {
     padding: 10px;
     border-radius: 50px;
     width: 40px;
     height: 40px;
     line-height: 25px;
 }
+
 footer .col-md-5 ul li {
     float: left;
     width: 50%;
 }
+
 .table>:not(:first-child) {
     border-top: 1px solid rgb(255 255 255) !important;
 }
+
 section.cart-page-sec {
     padding: 50px 0px;
+}
+
+.mybtngreen {
+    padding: 10px 28px !important;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    display: inline-block;
+    font-family: var(--font-heading);
+    background: var(--color-bg-3);
+    color: #fff;
+    transition: .28s ease;
+    font-size: 16px !important;
+}
+
+.mybtngreen:hover {
+    background: var(--color-text);
+    color: #fff;
+    border-color: var(--color-text);
 }

@@ -152,17 +152,64 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-9 mx-auto">
-                        <h2 class="section-title text-center">{{ $customizeBracelet->title }}</h2>
+                        <h2 class="section-title text-center">{{-- $customizeBracelet->title --}}Special Product</h2>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex flex-column justify-content-center">
                                 <div class="customised-img-box">
                                     <div class="owl-carousel owl-theme" id="customised-img">
                                         <x-frontend.image-carousel :item="$customizeBracelet" />
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <x-frontend.custom-bracelet-form full-width="true" />
+                            <div class="col-md-6 d-flex flex-column justify-content-center">
+
+                                <div class="customised-form">
+                                    <h3 class="h3 fw-bold">{{ $customizeBracelet->title }}</h3>
+                                    <p>{{ $customizeBracelet->short_description }}</p>
+                                    <div class="h4 fw-bold my-2">
+                                        <x-frontend.price :item="$customizeBracelet" />
+                                    </div>
+                                    @if ($customizeBracelet->tags->isNotEmpty())
+                                        <div class="custom_tag_pdp my-2">
+                                            <ul><strong>Tags:</strong>
+                                                @foreach ($customizeBracelet->tags as $tag)
+                                                    <li class="tags h5 fw-bold">{{ $tag->title }}@if(!$loop->last),@endif</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                    <div class="product-rating h6">
+                                        <div class="rating-starss d-inline-flex flex-row">
+                                            @php
+                                                $rating = min(5, max(0, $customizeBracelet->avg_rating ?? 0));
+                                                $full = (int) floor($rating);
+                                                $half = (($rating - $full) >= 0.5) ? 1 : 0;
+                                                $empty = 5 - $full - $half;
+                                            @endphp
+
+                                            @for($i = 0; $i < $full; $i++)
+                                                <i class="fa fa-star text-warning"></i>
+                                            @endfor
+
+                                            @if($half)
+                                                <i class="fas fa-star-half-alt text-warning"></i>
+                                            @endif
+
+                                            @for($i = 0; $i < $empty; $i++)
+                                                <i class="fa fa-star text-secondary"></i>
+                                            @endfor
+                                        </div>
+                                        <span class="rating-count">({{ $customizeBracelet->reviews->count() }} Reviews)</span>
+                                    </div>
+                                    <div class="mt-4">
+
+                                        <a href="{{ route('products.details', $customizeBracelet->slug) }}"
+                                            class="btnn btn-outline-darkk mybtngreen">
+                                            Customize Now
+                                        </a>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -171,8 +218,6 @@
         </section>
         <!-- customised bracelets section strat here -->
     @endif
-
-
 
     @if ($globalSectionSecond)
         <x-frontend.global-section :item="$globalSectionSecond" />

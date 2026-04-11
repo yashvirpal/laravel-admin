@@ -55,8 +55,8 @@ class HomeController extends Controller
 
         if ($braceletCategory) {
             $braceletProducts = Product::active()
-                ->with('variants')
-                ->where('is_featured', true)
+                ->with(['variants', 'variants.values'])
+                //->where('is_featured', true)
                 ->whereHas('categories', function ($q) use ($braceletCategory) {
                     $q->where('product_categories.id', $braceletCategory->id);
                 })
@@ -64,7 +64,7 @@ class HomeController extends Controller
                 ->get();
             $braceletProducts = $this->wishlist->attachWishlistFlag($braceletProducts);
         }
-
+        //dd($braceletProducts->count(),ProductCategory::where('slug','bracelets')->first()->products()->count());
         $newProducts = Product::active()
             ->with('variants')
             ->orderByDesc('id')
@@ -89,6 +89,7 @@ class HomeController extends Controller
 
         $customizeBracelet = Product::active()
             ->with(['variants', 'galleries'])
+            ->with(['reviews', 'categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])
             ->find(1);
 
         return view('frontend.home', compact(
@@ -192,7 +193,11 @@ class HomeController extends Controller
         $segments = $categories ? explode('/', $categories) : [];
         $categorySlug = end($segments) ?: null;
 
-        $category = ProductCategory::active()->where('slug', $categorySlug)->firstOrFail();
+        $category = ProductCategory::active()->where('slug', $categorySlug)->first();
+        if (!$category) {
+            $page = Page::where('slug', '404')->first();
+            return view('frontend.404', compact('page'));
+        }
         $filters = $this->filterData();
 
         return view('frontend.product-category', compact('category', 'filters', 'segments'));
@@ -203,8 +208,11 @@ class HomeController extends Controller
         $product = Product::active()
             ->with(['reviews', 'categories', 'tags', 'galleries', 'variants.values.attribute', 'attributes.values', 'faqs'])
             ->where('slug', $slug)
-            ->firstOrFail();
-
+            ->first();
+        if (!$product) {
+            $page = Page::where('slug', '404')->first();
+            return view('frontend.404', compact('page'));
+        }
         $categoryIds = $product->categories->pluck('id');
         $relatedProducts = Product::active()
             ->whereHas('categories', function ($q) use ($categoryIds) {

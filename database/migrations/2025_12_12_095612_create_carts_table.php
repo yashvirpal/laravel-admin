@@ -27,12 +27,13 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('cart_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            
+
             // Reference product_variants table (not variants)
             $table->foreignId('variant_id')->nullable()->constrained('product_variants')->cascadeOnDelete();
-            
+
             $table->unsignedInteger('quantity')->default(1);
             $table->decimal('price', 10, 2);
+            $table->string('custom_field')->nullable();
             $table->timestamps();
 
             $table->index(['cart_id', 'product_id']);
