@@ -18,12 +18,14 @@ class OrderItem extends Model
         'quantity',
         'price',
         'subtotal',
+        'custom_data',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'price' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'custom_data' => 'array',  // ✅ needed to store JSON
     ];
 
     // Relationships

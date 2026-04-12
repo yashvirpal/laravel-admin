@@ -60,7 +60,7 @@ return new class extends Migration {
             $table->string('product_name');
             $table->string('variant_name')->nullable();
             $table->string('sku')->nullable();
-            $table->string('custom_field')->nullable();
+            $table->json('custom_data')->nullable();
 
             $table->integer('quantity')->default(1);
             $table->decimal('price', 10, 2); // Unit price

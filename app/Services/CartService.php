@@ -197,7 +197,7 @@ class CartService
     /**
      * Add item to cart
      */
-    public function addItem(int $productId, int $quantity = 1, ?int $variantId = null, float $price): CartItem
+    public function addItem(int $productId, int $quantity = 1, ?int $variantId = null, float $price, $customData = null): CartItem
     {
         DB::beginTransaction();
         try {
@@ -216,6 +216,7 @@ class CartService
                     'variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $price,
+                    'custom_data' => $customData,
                 ]);
             }
 
@@ -230,6 +231,7 @@ class CartService
                 'variant_id' => $variantId,
                 'quantity' => $quantity,
                 'price' => $price,
+                'custom_data' => $customData,
                 'error' => $e->getMessage(),
             ]);
             throw $e;

@@ -37,6 +37,7 @@ class CartController extends Controller
             $request->validate([
                 'quantity' => 'nullable|integer|min:1|max:100',
                 'variant_id' => 'nullable|exists:product_variants,id',
+                'customData'=>'nullable',
             ]);
 
             $variant = null;
@@ -79,7 +80,8 @@ class CartController extends Controller
                 productId: $product->id,
                 quantity: $request->quantity ?? 1,
                 variantId: $variant?->id,
-                price: $price
+                price: $price,
+                customData: $request->input('customData') ?? null 
             );
 
             return response()->json([

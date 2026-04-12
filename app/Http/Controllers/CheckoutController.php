@@ -587,6 +587,7 @@ class CheckoutController extends Controller
                 'quantity' => $item->quantity,
                 'price' => $item->price,
                 'subtotal' => $item->price * $item->quantity,
+                'custom_data' =>  $item->custom_data,
             ]);
         }
 

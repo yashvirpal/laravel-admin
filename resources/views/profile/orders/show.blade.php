@@ -119,10 +119,33 @@
                                         </thead>
                                         <tbody>
                                             @foreach($order->items as $item)
-
                                                 <tr>
                                                     <td>
-                                                        {{ $item->product->title ?? 'N/A' }}
+                                                        <a
+                                                            href="{{ route('products.details', $item->product->slug) }}">{{ $item->product->title ?? 'N/A' }}</a>
+
+                                                        @if($item->custom_data)
+                                                            @php
+                                                                $customData = is_array($item->custom_data)
+                                                                    ? $item->custom_data
+                                                                    : json_decode($item->custom_data, true);
+                                                            @endphp
+
+                                                            <div class="mt-2 small">
+                                                                @foreach($customData as $key => $value)
+                                                                    @if(!empty($value))
+                                                                        <div class="d-flex">
+                                                                            <span class="fw-semibold me-1">
+                                                                                {{ ucwords(str_replace('_', ' ', $key)) }}:
+                                                                            </span>
+                                                                            <span class="text-muted">
+                                                                                {{ $value }}
+                                                                            </span>
+                                                                        </div>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
                                                     </td>
 
                                                     <td>
@@ -184,6 +207,16 @@
                                     </div>
                                 </div>
                             @endif
+
+                            @if(!empty($order->notes))
+                                <div class="mt-3 p-3 bg-light border rounded">
+                                    <div class="fw-semibold mb-1">Order Notes</div>
+                                    <p class="mb-0 text-muted">
+                                        {{ $order->notes }}
+                                    </p>
+                                </div>
+                            @endif
+
 
                             <a href="{{ route('profile.orders') }}" class="btn btn-outline-secondary">
                                 Back to Orders

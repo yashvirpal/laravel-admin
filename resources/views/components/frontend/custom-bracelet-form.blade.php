@@ -1,42 +1,31 @@
-@props([
-    'fullWidth' => false, // default
-])
-@php
-    $colClass = $fullWidth ? 'col-md-12' : 'col-md-6';
-@endphp
 <div class="customised-form">
-    {!!  !$fullWidth ? "<h4>For Energize, We require these details</h4>" : "" !!}
+    <h4>For Energize, We require these details</h4>
     <form>
         <div class="row">
-            <div class="{{ $colClass }}">
+            <div class="col-md-6">
                 <div class="input-group">
-                    <label>Name</label>
-                    <input type="text" name="">
+                    <label for="cb_name">Name</label>
+                    <input type="text" name="cb_name" id="cb_name" value="Test User"/>
                 </div>
             </div>
-            <div class="{{ $colClass }}">
+            <div class="col-md-6">
                 <div class="input-group">
-                    <label>Date Of Birth</label>
-                    <input type="text" name="">
+                    <label for="cb_dob">Date Of Birth</label>
+                    <input type="date" name="cb_dob" id="cb_dob" value="02-04-2026"/>
                 </div>
             </div>
-            <div class="{{ $colClass }}">
+            <div class="col-md-6">
                 <div class="input-group">
-                    <label>Problem</label>
-                    <input type="text" name="">
+                    <label for="cb_problem">Problem</label>
+                    <input type="text" name="cb_problem" id="cb_problem" value="Test Problem"/>
                 </div>
             </div>
-            <div class="{{ $colClass }}">
+            <div class="col-md-6">
                 <div class="input-group">
-                    <label>Specific Problem</label>
-                    <textarea></textarea>
+                    <label for="cb_specify_problem">Specific Problem</label>
+                    <textarea name="cb_specify_problem" id="cb_specify_problem">Asdfasddddddddddddddddddddddddddd</textarea>
                 </div>
             </div>
-            <!-- <div class="{{ $colClass }}">
-                <div class="input-group">
-                    <button>Submit</button>
-                </div>
-            </div> -->
         </div>
     </form>
 </div>

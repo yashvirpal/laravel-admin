@@ -36,13 +36,13 @@ function route(name, id = null) {
         'checkout.index': '/checkout',
         'products.index': '/products',
     };
-    
+
     // Fallback to App.routes if available
     if (typeof App !== 'undefined' && App.routes && App.routes[name]) {
         let url = App.routes[name];
         return id ? url.replace(':id', id) : url;
     }
-    
+
     return routes[name] || '/';
 }
 
@@ -69,9 +69,9 @@ function hideLoader() {
 /**
  * Add product to cart
  */
-function addToCart(productId, qty = 1, buyNow = false, variantId = null) {
+function addToCart(productId, qty = 1, buyNow = false, variantId = null, customData = null) {
     showLoader();
-    
+
     // Get quantity from input if available
     const input = document.querySelector('.qty-input');
     if (input) {
@@ -91,86 +91,87 @@ function addToCart(productId, qty = 1, buyNow = false, variantId = null) {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
             quantity: qty,
-            variant_id: variantId
+            variant_id: variantId,
+            customData: customData
         })
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            return;
-        }
-
-        // Update cart count
-        document.querySelectorAll('.cartCount').forEach(el => {
-            el.innerText = data.cart_count;
-        });
-
-        // Reload mini cart
-        loadMiniCart();
-
-        // Show success message
-        toastr.success(data.message);
-
-        // Handle buy now button
-        const buyNowBtn = document.querySelector(`#buyNow${productId}`);
-        if (buyNowBtn) {
-            const addCartBtn = document.querySelector(`#addCart${productId}`);
-            if (addCartBtn) {
-                addCartBtn.disabled = true;
-                addCartBtn.textContent = '✓ Added to Cart';
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
             }
-            buyNowBtn.disabled = true;
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                return;
+            }
 
-            // Disable quantity controls
-            const wrapper = document.querySelector(`#qtywrapper${productId}`);
-            if (wrapper) {
-                wrapper.querySelectorAll("button, input").forEach((el) => {
-                    el.disabled = true;
+            // Update cart count
+            document.querySelectorAll('.cartCount').forEach(el => {
+                el.innerText = data.cart_count;
+            });
+
+            // Reload mini cart
+            loadMiniCart();
+
+            // Show success message
+            toastr.success(data.message);
+
+            // Handle buy now button
+            const buyNowBtn = document.querySelector(`#buyNow${productId}`);
+            if (buyNowBtn) {
+                const addCartBtn = document.querySelector(`#addCart${productId}`);
+                if (addCartBtn) {
+                    addCartBtn.disabled = true;
+                    addCartBtn.textContent = '✓ Added to Cart';
+                }
+                buyNowBtn.disabled = true;
+
+                // Disable quantity controls
+                const wrapper = document.querySelector(`#qtywrapper${productId}`);
+                if (wrapper) {
+                    wrapper.querySelectorAll("button, input").forEach((el) => {
+                        el.disabled = true;
+                    });
+                }
+            } else {
+                // Disable all add to cart buttons for this product
+                const addCartButtons = document.querySelectorAll(`.addCart${productId}`);
+                addCartButtons.forEach(function (item) {
+                    item.disabled = true;
+
+                    // Update button content
+                    if (item.querySelector('svg')) {
+                        // Has SVG icon
+                        const svg = item.querySelector('svg g');
+                        if (svg) {
+                            svg.setAttribute('fill', '#999');
+                        }
+                    } else {
+                        // Text button
+                        item.innerHTML = '<i class="bi bi-check-circle me-1"></i>Added';
+                    }
+
+                    item.classList.add('in-cart');
+                    item.setAttribute('title', 'Already in Cart');
                 });
             }
-        } else {
-            // Disable all add to cart buttons for this product
-            const addCartButtons = document.querySelectorAll(`.addCart${productId}`);
-            addCartButtons.forEach(function (item) {
-                item.disabled = true;
-                
-                // Update button content
-                if (item.querySelector('svg')) {
-                    // Has SVG icon
-                    const svg = item.querySelector('svg g');
-                    if (svg) {
-                        svg.setAttribute('fill', '#999');
-                    }
-                } else {
-                    // Text button
-                    item.innerHTML = '<i class="bi bi-check-circle me-1"></i>Added';
-                }
-                
-                item.classList.add('in-cart');
-                item.setAttribute('title', 'Already in Cart');
-            });
-        }
 
-        // Redirect to checkout if buy now
-        if (buyNow) {
-            setTimeout(() => {
-                window.location.href = route('checkout.index');
-            }, 1500);
-        }
-    })
-    .catch(err => {
-        console.error("Add To Cart Error:", err);
-        toastr.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
-    })
-    .finally(hideLoader);
+            // Redirect to checkout if buy now
+            if (buyNow) {
+                setTimeout(() => {
+                    window.location.href = route('checkout.index');
+                }, 1500);
+            }
+        })
+        .catch(err => {
+            console.error("Add To Cart Error:", err);
+            toastr.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
+        })
+        .finally(hideLoader);
 }
 
 /**
@@ -191,21 +192,39 @@ function addVariantToCart(productId, buyNow = false) {
     }
 
     const qty = parseInt(document.querySelector('.qty-input')?.value) || 1;
+
+    // Get fields safely
+    const name = document.getElementById('cb_name')?.value;
+    const dob = document.getElementById('cb_dob')?.value;
+    const problem = document.getElementById('cb_problem')?.value;
+    const specifyProblem = document.getElementById('cb_specify_problem')?.value;
+
+    let customData = null;
+
+    // Only include if at least one field has value
+    if (name || dob || problem || specifyProblem) {
+        customData = {
+            name: name || '',
+            dob: dob || '',
+            problem: problem || '',
+            specify_problem: specifyProblem || ''
+        };
+    }
     
-    addToCart(productId, qty, buyNow, selectedVariantId);
+    addToCart(productId, qty, buyNow, selectedVariantId, customData);
 }
 
 /**
  * Update cart item quantity (internal - with debouncing)
  */
-const updateCartInternal = debounce(function(itemId, qty) {
+const updateCartInternal = debounce(function (itemId, qty) {
     if (isUpdating) {
         console.log('Update already in progress, skipping...');
         return;
     }
 
     qty = parseInt(qty);
-    
+
     if (qty < 1) {
         if (!confirm('Remove this item from cart?')) {
             // Reset input to previous value
@@ -229,7 +248,7 @@ const updateCartInternal = debounce(function(itemId, qty) {
     }
 
     isUpdating = true;
-    
+
     // Add visual loading state
     const wrapper = document.querySelector(`input[data-item-id="${itemId}"]`)?.closest('.qty-wrapper');
     if (wrapper) {
@@ -248,64 +267,64 @@ const updateCartInternal = debounce(function(itemId, qty) {
         },
         body: JSON.stringify({ quantity: qty })
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            // Reset to previous value
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                // Reset to previous value
+                const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+                if (input && input.dataset.previousValue) {
+                    input.value = input.dataset.previousValue;
+                }
+                return;
+            }
+
+            // Success - no toast to reduce noise
+            // toastr.success(data.message);
+
+            // Update the input's previous value
+            const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+            if (input) {
+                input.dataset.previousValue = qty;
+            }
+
+            // Update item subtotal
+            const itemSubtotalEl = document.querySelector(`#subtotal-${itemId}`);
+            if (itemSubtotalEl && data.item_subtotal) {
+                itemSubtotalEl.innerText = `${window.symbol || '₹'}${data.item_subtotal}`;
+            }
+
+            // Update cart totals
+            updateCartTotals(data);
+
+            // Reload mini cart
+            loadMiniCart();
+        })
+        .catch(err => {
+            console.error("Update Cart Error:", err);
+            toastr.error("⚠️ Failed to update cart");
+
+            // Reset to previous value on error
             const input = document.querySelector(`input[data-item-id="${itemId}"]`);
             if (input && input.dataset.previousValue) {
                 input.value = input.dataset.previousValue;
             }
-            return;
-        }
+        })
+        .finally(() => {
+            hideLoader();
+            isUpdating = false;
 
-        // Success - no toast to reduce noise
-        // toastr.success(data.message);
-
-        // Update the input's previous value
-        const input = document.querySelector(`input[data-item-id="${itemId}"]`);
-        if (input) {
-            input.dataset.previousValue = qty;
-        }
-
-        // Update item subtotal
-        const itemSubtotalEl = document.querySelector(`#subtotal-${itemId}`);
-        if (itemSubtotalEl && data.item_subtotal) {
-            itemSubtotalEl.innerText = `${window.symbol || '₹'}${data.item_subtotal}`;
-        }
-
-        // Update cart totals
-        updateCartTotals(data);
-
-        // Reload mini cart
-        loadMiniCart();
-    })
-    .catch(err => {
-        console.error("Update Cart Error:", err);
-        toastr.error("⚠️ Failed to update cart");
-        
-        // Reset to previous value on error
-        const input = document.querySelector(`input[data-item-id="${itemId}"]`);
-        if (input && input.dataset.previousValue) {
-            input.value = input.dataset.previousValue;
-        }
-    })
-    .finally(() => {
-        hideLoader();
-        isUpdating = false;
-        
-        // Remove loading state
-        if (wrapper) {
-            wrapper.classList.remove('loading');
-            wrapper.querySelectorAll('button, input').forEach(el => el.disabled = false);
-        }
-    });
+            // Remove loading state
+            if (wrapper) {
+                wrapper.classList.remove('loading');
+                wrapper.querySelectorAll('button, input').forEach(el => el.disabled = false);
+            }
+        });
 }, 500); // 500ms debounce delay
 
 /**
@@ -340,36 +359,36 @@ function removeFromCart(itemId) {
             'Accept': 'application/json'
         }
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            return;
-        }
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                return;
+            }
 
-        toastr.success(data.message);
+            toastr.success(data.message);
 
-        // Update cart count
-        document.querySelectorAll('.cartCount').forEach(el => {
-            el.innerText = data.cart_count;
-        });
+            // Update cart count
+            document.querySelectorAll('.cartCount').forEach(el => {
+                el.innerText = data.cart_count;
+            });
 
-        // Remove item from DOM
-        const cartItem = document.getElementById(`cart-item-${itemId}`);
-        if (cartItem) {
-            cartItem.remove();
-        }
+            // Remove item from DOM
+            const cartItem = document.getElementById(`cart-item-${itemId}`);
+            if (cartItem) {
+                cartItem.remove();
+            }
 
-        // Check if cart is empty
-        if (data.cart_count === 0) {
-            const cartPage = document.getElementById('cartpage');
-            if (cartPage) {
-                cartPage.innerHTML = `
+            // Check if cart is empty
+            if (data.cart_count === 0) {
+                const cartPage = document.getElementById('cartpage');
+                if (cartPage) {
+                    cartPage.innerHTML = `
                     <div class="text-center py-5">
                         <i class="bi bi-cart-x fs-1 text-muted"></i>
                         <p class="text-muted mt-3">Your cart is empty.</p>
@@ -378,20 +397,20 @@ function removeFromCart(itemId) {
                         </a>
                     </div>
                 `;
+                }
+            } else {
+                // Update cart totals
+                updateCartTotals(data);
             }
-        } else {
-            // Update cart totals
-            updateCartTotals(data);
-        }
 
-        // Reload mini cart
-        loadMiniCart();
-    })
-    .catch(err => {
-        console.error("Remove From Cart Error:", err);
-        toastr.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
-    })
-    .finally(hideLoader);
+            // Reload mini cart
+            loadMiniCart();
+        })
+        .catch(err => {
+            console.error("Remove From Cart Error:", err);
+            toastr.error(err.message || "⚠️ Oops! Something went wrong. Please try again 😕");
+        })
+        .finally(hideLoader);
 }
 
 /**
@@ -399,43 +418,43 @@ function removeFromCart(itemId) {
  */
 function loadMiniCart() {
     fetch(route('cart.mini'), {
-        headers: { 
+        headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.status === false) {
-            return; // Silently fail for mini cart
-        }
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === false) {
+                return; // Silently fail for mini cart
+            }
 
-        // Update mini cart HTML
-        const miniCartEl = document.getElementById('minicart');
-        if (miniCartEl && data.html) {
-            miniCartEl.innerHTML = data.html;
-        }
+            // Update mini cart HTML
+            const miniCartEl = document.getElementById('minicart');
+            if (miniCartEl && data.html) {
+                miniCartEl.innerHTML = data.html;
+            }
 
-        // Update cart count
-        document.querySelectorAll('.cartCount').forEach(el => {
-            el.innerText = data.cart_count || 0;
+            // Update cart count
+            document.querySelectorAll('.cartCount').forEach(el => {
+                el.innerText = data.cart_count || 0;
+            });
+
+            // Update cart total in header if exists
+            const cartTotalEl = document.querySelector('.header-cart-total');
+            if (cartTotalEl && data.cart_total) {
+                cartTotalEl.innerText = `${window.symbol || '₹'}${data.cart_total}`;
+            }
+        })
+        .catch(err => {
+            console.error("Mini Cart Error:", err);
+            // Silently fail for mini cart - don't show error to user
         });
-
-        // Update cart total in header if exists
-        const cartTotalEl = document.querySelector('.header-cart-total');
-        if (cartTotalEl && data.cart_total) {
-            cartTotalEl.innerText = `${window.symbol || '₹'}${data.cart_total}`;
-        }
-    })
-    .catch(err => {
-        console.error("Mini Cart Error:", err);
-        // Silently fail for mini cart - don't show error to user
-    });
 }
 
 /**
@@ -463,25 +482,25 @@ function applyCoupon() {
         },
         body: JSON.stringify({ code: code })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            return;
-        }
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                return;
+            }
 
-        toastr.success(data.message);
+            toastr.success(data.message);
 
-        // Clear input
-        couponInput.value = '';
+            // Clear input
+            couponInput.value = '';
 
-        // Update totals
-        updateCartTotals(data);
+            // Update totals
+            updateCartTotals(data);
 
-        // Add coupon badge to applied coupons list
-        const appliedCouponsList = document.getElementById('applied-coupons-list');
-        if (appliedCouponsList && data.coupon_id) {
-            const couponHtml = `
+            // Add coupon badge to applied coupons list
+            const appliedCouponsList = document.getElementById('applied-coupons-list');
+            if (appliedCouponsList && data.coupon_id) {
+                const couponHtml = `
                 <div class="d-inline-flex align-items-center bg-success text-white px-3 py-1 rounded me-2 mb-2" 
                      data-coupon-id="${data.coupon_id}">
                     <span class="me-2">${code}</span>
@@ -492,33 +511,33 @@ function applyCoupon() {
                             aria-label="Remove"></button>
                 </div>
             `;
-            appliedCouponsList.insertAdjacentHTML('beforeend', couponHtml);
-        }
+                appliedCouponsList.insertAdjacentHTML('beforeend', couponHtml);
+            }
 
-        // Show discount row
-        const discountRow = document.getElementById('discount-row');
-        if (discountRow) {
-            discountRow.style.display = 'table-row';
-        }
+            // Show discount row
+            const discountRow = document.getElementById('discount-row');
+            if (discountRow) {
+                discountRow.style.display = 'table-row';
+            }
 
-        // Show free items if any
-        if (data.free_items && data.free_items.length > 0) {
-            toastr.info(`You've got ${data.free_items.length} free item(s)!`, 'Free Items!');
-            
-            // Reload page to show free items
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
-        } else {
-            // Update mini cart
-            loadMiniCart();
-        }
-    })
-    .catch(err => {
-        console.error("Apply Coupon Error:", err);
-        toastr.error("⚠️ Failed to apply coupon. Please try again.");
-    })
-    .finally(hideLoader);
+            // Show free items if any
+            if (data.free_items && data.free_items.length > 0) {
+                toastr.info(`You've got ${data.free_items.length} free item(s)!`, 'Free Items!');
+
+                // Reload page to show free items
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                // Update mini cart
+                loadMiniCart();
+            }
+        })
+        .catch(err => {
+            console.error("Apply Coupon Error:", err);
+            toastr.error("⚠️ Failed to apply coupon. Please try again.");
+        })
+        .finally(hideLoader);
 }
 
 /**
@@ -538,47 +557,47 @@ function removeCoupon(couponId) {
             'Accept': 'application/json'
         }
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            return;
-        }
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                return;
+            }
 
-        toastr.success(data.message);
+            toastr.success(data.message);
 
-        // Remove coupon badge
-        const couponBadge = document.querySelector(`[data-coupon-id="${couponId}"]`);
-        if (couponBadge) {
-            couponBadge.remove();
-        }
+            // Remove coupon badge
+            const couponBadge = document.querySelector(`[data-coupon-id="${couponId}"]`);
+            if (couponBadge) {
+                couponBadge.remove();
+            }
 
-        // Check if no more coupons
-        const appliedCouponsList = document.getElementById('applied-coupons-list');
-        if (appliedCouponsList) {
-            const remainingCoupons = appliedCouponsList.querySelectorAll('[data-coupon-id]');
-            if (remainingCoupons.length === 0) {
-                // Hide discount row
-                const discountRow = document.getElementById('discount-row');
-                if (discountRow) {
-                    discountRow.style.display = 'none';
+            // Check if no more coupons
+            const appliedCouponsList = document.getElementById('applied-coupons-list');
+            if (appliedCouponsList) {
+                const remainingCoupons = appliedCouponsList.querySelectorAll('[data-coupon-id]');
+                if (remainingCoupons.length === 0) {
+                    // Hide discount row
+                    const discountRow = document.getElementById('discount-row');
+                    if (discountRow) {
+                        discountRow.style.display = 'none';
+                    }
                 }
             }
-        }
 
-        // Update totals
-        updateCartTotals(data);
+            // Update totals
+            updateCartTotals(data);
 
-        // Reload page to remove free items
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
-    })
-    .catch(err => {
-        console.error("Remove Coupon Error:", err);
-        toastr.error("⚠️ Failed to remove coupon. Please try again.");
-    })
-    .finally(hideLoader);
+            // Reload page to remove free items
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        })
+        .catch(err => {
+            console.error("Remove Coupon Error:", err);
+            toastr.error("⚠️ Failed to remove coupon. Please try again.");
+        })
+        .finally(hideLoader);
 }
 
 /**
@@ -600,7 +619,7 @@ function updateCartTotals(data) {
         const discountEl = document.getElementById('cart-discount');
         if (discountEl) {
             discountEl.innerText = `-${symbol}${data.cart_discount}`;
-            
+
             // Show/hide discount row
             const discountRow = document.getElementById('discount-row');
             if (discountRow) {
@@ -625,10 +644,10 @@ function updateCartTotals(data) {
             shippingEl.innerText = `${symbol}${data.cart_shipping}`;
         }
     }
-    
+
     // Update grand total
     if (data.cart_total !== undefined) {
-       
+
         document.querySelectorAll('#cart-total, .cart-total').forEach(el => {
             console.log(el)
             el.innerText = `${symbol}${data.cart_total}`;
@@ -653,29 +672,29 @@ function clearCart() {
             'Accept': 'application/json'
         }
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === false) {
-            toastr.error(data.message);
-            return;
-        }
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === false) {
+                toastr.error(data.message);
+                return;
+            }
 
-        toastr.success(data.message);
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
-    })
-    .catch(err => {
-        console.error("Clear Cart Error:", err);
-        toastr.error("⚠️ Failed to clear cart. Please try again.");
-    })
-    .finally(hideLoader);
+            toastr.success(data.message);
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        })
+        .catch(err => {
+            console.error("Clear Cart Error:", err);
+            toastr.error("⚠️ Failed to clear cart. Please try again.");
+        })
+        .finally(hideLoader);
 }
 
 /**
  * Initialize cart on page load
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Load mini cart
     loadMiniCart();
 
@@ -687,12 +706,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto uppercase coupon code input
     const couponInput = document.getElementById('coupon-code');
     if (couponInput) {
-        couponInput.addEventListener('input', function() {
+        couponInput.addEventListener('input', function () {
             this.value = this.value.toUpperCase();
         });
-        
+
         // Allow enter key to apply coupon
-        couponInput.addEventListener('keypress', function(e) {
+        couponInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 applyCoupon();
@@ -752,19 +771,19 @@ document.addEventListener("click", function (e) {
 /**
  * Handle manual quantity input change with debouncing
  */
-document.addEventListener("change", function(e) {
+document.addEventListener("change", function (e) {
     if (e.target.matches('.qty-input') && !isUpdating) {
         const input = e.target;
         const itemId = input.dataset.itemId;
-        
+
         if (itemId) {
             const value = parseInt(input.value) || 1;
-            
+
             // Store previous value if not already stored
             if (!input.dataset.previousValue) {
                 input.dataset.previousValue = value;
             }
-            
+
             updateCartInternal(itemId, value);
         }
     }

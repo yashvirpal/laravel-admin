@@ -13,11 +13,13 @@ class CartItem extends Model
         'variant_id',
         'quantity',
         'price',
+        'custom_data',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'price' => 'decimal:2',
+        'custom_data' => 'array',  // ✅ needed to store JSON
     ];
 
     public function cart(): BelongsTo

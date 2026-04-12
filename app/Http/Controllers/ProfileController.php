@@ -375,6 +375,7 @@ class ProfileController extends Controller
         $order->load(['items.product', 'items.variant', 'transactions', 'coupons', 'shippingAddress', 'billingAddress',]);
 
         // dd([
+        //     'order'=>$order,
         //     'order_id' => $order->id,
         //     'transaction_count' => $order->transactions->count(),
         //     'transactions' => $order->transactions->toArray(),
