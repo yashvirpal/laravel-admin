@@ -122,6 +122,6 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-    'dev_server_url' => env('VITE_DEV_SERVER_URL', 'http://localhost:5173'),
+    'dev_server_url' => env('VITE_DEV_SERVER_URL'),
 
 ];

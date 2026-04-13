@@ -41,7 +41,7 @@ docker exec laravel_admin_app chmod -R 775 /var/www/html/bootstrap/cache
 
 sudo chown -R $(whoami):$(whoami) .
 sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database                                                     
-
+6I6?vB.&jOUIzhp#@123
 
 | Service     | URL                                            |
 | ----------- | ---------------------------------------------- |
@@ -56,8 +56,39 @@ sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database
 
 ssh-keygen -t ed25519 -C "contact@yashvir.com"
 cat ~/.ssh/id_ed25519.pub
-6I6?vB.&jOUIzhp#
+
 
 ssh root@72.61.174.220
 
 scp docker.zip root@72.61.174.220:/var/jv
+
+
+
+
+
+mac mini m4 24-512
+--1500 INR
+usb hub -- 8000-14000 INR
+monitor benq 27" or 32"
+webcam --
+
+
+
+Logitech MK215
+
+Mac mini m4 24-512
+UGREEN Revodok USB-C Hub 6-in-1
+BenQ GW2790Q
+logitech brio 100 webcam
+Keychron K2 Wireless Mechanical Keyboard //Dell KM3322W Wireless Combo 
+
+
+Logitech MX Master 3S//Logitech MX Master 5S
+
+
+
+Item	Cost
+Mac mini M4	₹99,900
+BenQ 27” Monitor	₹15,000
+Keychron K2	₹7,000
+Total	₹1,21,900 (~₹1.22L)
