@@ -44,7 +44,7 @@
                             <div class="login-box">
                                 <ul>
                                     <li>
-                                        <a class="topwish" href="{{ route('page', 'wishlist') }}">
+                                        <a class="topwish" href="{{ route('profile.wishlist') }}">
                                             <i class="fa fa-heart hidden-md hidden-lg hidden-sm"></i>
                                         </a>
                                         <span id="wishlistCount">0</span>
@@ -95,7 +95,8 @@
                                         <div class="left-logo">
                                             <figure>
                                                 <a href="{{ route('home') }}">
-                                                    <img src="{{ asset('frontend/assets/images/logo.webp') }}" alt="logo">
+                                                    <img src="{{ asset('frontend/assets/images/logo.webp') }}"
+                                                        alt="logo">
                                                 </a>
                                             </figure>
                                         </div>
