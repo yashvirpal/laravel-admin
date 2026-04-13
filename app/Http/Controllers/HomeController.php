@@ -182,7 +182,8 @@ class HomeController extends Controller
     {
         $page = Page::where('slug', 'search')->first();
         $query = $request->input('q');
-        $products = Product::where('title', 'like', "%{$query}%")->paginate(12);
+        //$products = Product::where('title', 'like', "%{$query}%")->paginate(12);
+        $products = Product::where('title', 'ILIKE', "%{$query}%")->paginate(12);
         $products = $this->wishlist->attachWishlistFlag($products);
 
         return view('frontend.search', compact('products', 'query', 'page'));
