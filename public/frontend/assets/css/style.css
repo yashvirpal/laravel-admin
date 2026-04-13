@@ -5645,3 +5645,10 @@ section.cart-page-sec {
     color: #fff;
     border-color: var(--color-text);
 }
+
+ #customised-img .customised-img-wrap img {
+    width: 100%;
+    height: 300px;      /* 🔥 control height */
+    object-fit: cover;  /* 🔥 prevent stretch */
+    border-radius: 8px;
+}
