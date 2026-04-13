@@ -41,7 +41,7 @@ docker exec laravel_admin_app chmod -R 775 /var/www/html/bootstrap/cache
 
 sudo chown -R $(whoami):$(whoami) .
 sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database                                                     
-6I6?vB.&jOUIzhp#@123
+6I6?vB.&jOUIzhp#
 
 | Service     | URL                                            |
 | ----------- | ---------------------------------------------- |
@@ -56,7 +56,6 @@ sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database
 
 ssh-keygen -t ed25519 -C "contact@yashvir.com"
 cat ~/.ssh/id_ed25519.pub
-
 
 ssh root@72.61.174.220
 
