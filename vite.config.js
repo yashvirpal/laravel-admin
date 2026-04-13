@@ -20,10 +20,14 @@ export default ({ mode }) => {
             host: '0.0.0.0',
             port: 5173,
             strictPort: true,
+            cors: {
+                origin: '*',
+            },
             hmr: {
                 host: env.VITE_DEV_SERVER_URL
                     ? env.VITE_DEV_SERVER_URL.replace('http://', '').replace(':5173', '')
                     : 'localhost',
+                port: 5173,
             },
         },
     });
