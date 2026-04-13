@@ -209,7 +209,7 @@
                             @endif
 
                             @if(!empty($order->notes))
-                                <div class="mt-3 p-3 bg-light border rounded">
+                                <div class="my-3 p-3 bg-light border rounded">
                                     <div class="fw-semibold mb-1">Order Notes</div>
                                     <p class="mb-0 text-muted">
                                         {{ $order->notes }}

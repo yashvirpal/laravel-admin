@@ -51,3 +51,13 @@ sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database
 | Mongo UI    | [http://localhost:8082](http://localhost:8082) |
 | pgAdmin     | [http://localhost:8083](http://localhost:8083) |
 | phpMyAdmin  | [http://localhost:8084](http://localhost:8084) |
+
+
+
+ssh-keygen -t ed25519 -C "contact@yashvir.com"
+cat ~/.ssh/id_ed25519.pub
+6I6?vB.&jOUIzhp#
+
+ssh root@72.61.174.220
+
+scp docker.zip root@72.61.174.220:/var/jv
