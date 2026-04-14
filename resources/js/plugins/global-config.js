@@ -59,6 +59,21 @@ export const ValidationRules = {
         }
     ],
 
+    products: [
+        {
+            rule: "function",
+            validator: () => {
+                const el = document.querySelector('#productSelect');
+                return el && $(el).val() && $(el).val().length > 0;
+            },
+            errorMessage: "Please select product"
+        }
+    ],
+    quantity: [
+        { rule: "required", errorMessage: "Quantity required" },
+        { rule: "number", errorMessage: "Must be a number" },
+    ],
+
     // -------------------------
     // Billing (Always Required)
     // -------------------------

@@ -106,6 +106,22 @@ return new class extends Migration {
 
             $table->timestamps();
         });
+        Schema::create('bulk_enquiries', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email');
+            $table->string('phone');
+            $table->string('company')->nullable();
+            $table->text('message')->nullable();
+            $table->json('products')->nullable(); // optional
+            $table->integer('quantity')->default(1);
+            $table->string('ip_address')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->string('browser')->nullable();
+            $table->string('platform')->nullable(); // OS
+            $table->string('device')->nullable();   // mobile/desktop
+            $table->timestamps();
+        });
     }
 
     /**
@@ -119,5 +135,6 @@ return new class extends Migration {
         Schema::dropIfExists('contact_submissions');
         Schema::dropIfExists('newsletters');
         Schema::dropIfExists('pages');
+        Schema::dropIfExists('bulk_enquiries');
     }
 };

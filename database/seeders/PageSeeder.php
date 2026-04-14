@@ -41,7 +41,7 @@ class PageSeeder extends Seeder
             'home' => 'home',
             'about-us' => 'about',
             'contact-us' => 'contact',
-            'bulk-enquiry' => 'default',
+            'bulk-enquiry' => 'bulkenquiry',
             'privacy-policy' => 'default',
             'terms-conditions' => 'default',
             'refund-returns' => 'default',

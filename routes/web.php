@@ -87,6 +87,9 @@ Route::post('/add-review', [HomeController::class, 'AddReview'])->name('add.revi
 
 
 Route::post('/contact-form-submit', [HomeController::class, 'contactFormSubmit'])->name('contact.submit');
+Route::post('/bulk-enquiry-submit', [HomeController::class, 'bulkEnquirySubmit'])->name('bulkenquiry.submit');
+Route::get('/bulk-enquiry-search-products', [HomeController::class, 'searchProduct'])->name('searchproduct');
+
 Route::post('/newsletter/subscribe', [HomeController::class, 'newsletterSubscribe'])->name('newsletter.subscribe');
 Route::get('/sitemap.xml', [HomeController::class, 'sitemapXML'])->name('sitemapxml');
 

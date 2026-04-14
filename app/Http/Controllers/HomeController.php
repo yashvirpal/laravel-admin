@@ -25,6 +25,9 @@ use App\Models\BlogPost;
 use App\Services\CartService;
 use App\Services\WishlistService;
 
+use App\Models\BulkEnquiry;
+use Jenssegers\Agent\Agent;
+
 class HomeController extends Controller
 {
     public function __construct(
@@ -539,5 +542,85 @@ class HomeController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    public function bulkEnquirySubmit(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'email' => 'required|email:rfc,dns|max:150',
+            //  'phone' => 'required|digits_between:8,15',
+            'phone' => 'required',
+            'company' => 'nullable|string|max:150',
+            'products' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1|max:100000',
+            'message' => 'required|string|min:5|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $agent = new Agent();
+
+            $enquiry = BulkEnquiry::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'company' => $request->company,
+                'message' => $request->message,
+                'products' => $request->products,
+                'quantity' => $request->quantity,
+
+                // 🔥 Tracking
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'browser' => $agent->browser(),
+                'platform' => $agent->platform(),
+                'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+            ]);
+
+            //✅ Send mail with clean data
+            // Mail::send('emails.bulkenquiry', [
+            //     'enquiry' => $enquiry
+            // ], function ($mail) use ($request) {
+            //     $mail->to('yashvir.pal@kalkine.co.in')->subject('New Bulk Enquiry from ' . $request->name)->replyTo($request->email);
+            // });
+
+            Mail::send('emails.bulkenquiry', ['data' => $enquiry], function ($mail) {
+                $mail->to('yashvir.pal@kalkine.co.in')
+                    ->subject('New Bulk Enquiry Received');
+            });
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Thanks! We will contact you soon.',
+                'redirect_url' => route('page', 'thank-you'),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong. Please try again.',
+                'error' => $e->getMessage() // remove in production
+            ], 500);
+        }
+    }
+
+    public function searchProduct(Request $request)
+    {
+        $query = $request->input('q');
+
+        $products = Product::where('title', 'ILIKE', "%{$query}%")
+            ->limit(10)
+            ->get(['id', 'title']);
+
+        return response()->json($products);
     }
 }
