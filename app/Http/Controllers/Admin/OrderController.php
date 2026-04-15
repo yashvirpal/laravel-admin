@@ -118,14 +118,14 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['items.product', 'transaction', 'user']);
+        $order->load(['items.product', 'latestTransaction', 'user','coupons','billingAddress','shippingAddress']);
         return view('admin.ecommerce.orders.show', compact('order'));
     }
 
     public function edit(Order $order)
     {
         $products = Product::pluck('title', 'id');
-        $order->load('items', 'transaction');
+        $order->load('items', 'transactions');
         return view('admin.ecommerce.orders.form', compact('order', 'products'));
     }
 

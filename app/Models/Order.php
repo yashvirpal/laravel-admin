@@ -85,7 +85,7 @@ class Order extends Model
 
     public function latestTransaction()
     {
-        return $this->hasOne(Transaction::class)->latest();
+        return $this->hasOne(Transaction::class)->latestOfMany();
     }
 
     // Scopes

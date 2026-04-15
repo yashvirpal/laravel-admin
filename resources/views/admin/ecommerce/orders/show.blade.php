@@ -12,10 +12,12 @@
 
     <div class="card card-primary card-outline mb-4">
         <div class="card-header d-flex justify-content-end align-items-center">
-            <a href="{{ route('admin.orders.index') }}" class="btn btn-primary btn-sm"><i class="bi bi-arrow-left-circle me-1"></i> Back To List</a>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-primary btn-sm"><i
+                    class="bi bi-arrow-left-circle me-1"></i> Back To List</a>
         </div>
 
         <div class="card-body">
+            <!-- {{ $order }} -->
             <h4>Order Information</h4>
             <table class="table table-bordered mb-3">
                 <tr>
@@ -35,12 +37,28 @@
                     <td>{{ $order->customer_phone }}</td>
                 </tr>
                 <tr>
-                    <th>Shipping Address</th>
-                    <td>{{ $order->shipping_address }}</td>
+                    <th>Billing Address</th>
+                    <td>{{ $order->billing_address }}
+                        {{ $order->billingAddress->address_line1 ?? '' }},
+                        {{ $order->billingAddress->address_line2 ?? '' }}<br>
+                        {{ $order->billingAddress->city ?? '' }},
+                        {{ $order->billingAddress->state ?? '' }}<br>
+                        {{ $order->billingAddress->country ?? '' }} -
+                        {{ $order->billingAddress->zip ?? '' }}<br>
+                        {{ $order->billingAddress->phone ?? '' }}
+                    </td>
                 </tr>
                 <tr>
-                    <th>Billing Address</th>
-                    <td>{{ $order->billing_address }}</td>
+                    <th>Shipping Address</th>
+                    <td>{{ $order->shipping_address }}
+                        {{ $order->shippingAddress->address_line1 ?? '' }},
+                        {{ $order->shippingAddress->address_line2 ?? '' }}<br>
+                        {{ $order->shippingAddress->city ?? '' }},
+                        {{ $order->shippingAddress->state ?? '' }}<br>
+                        {{ $order->shippingAddress->country ?? '' }} -
+                        {{ $order->shippingAddress->zip ?? '' }}<br>
+                        {{ $order->shippingAddress->phone ?? '' }}
+                    </td>
                 </tr>
                 <tr>
                     <th>Status</th>
@@ -61,10 +79,36 @@
                     <th>Subtotal</th>
                     <td>{{ currencyformat($order->subtotal) }}</td>
                 </tr>
+
+                @if ($order->tax_total)
+                    <tr>
+                        <th>Tax</th>
+                        <td>{{ currencyformat($order->tax_total) }}</td>
+                    </tr>
+                @endif
+                @if($order->coupons->count())
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <strong>Applied Coupons</strong>
+                        </div>
+                        <div class="card-body">
+                            @foreach($order->coupons as $coupon)
+                                <p>
+                                    <strong>Code:</strong> {{ $coupon->code }} <br>
+                                    <strong>Discount:</strong>
+                                    {{ currencyformat($coupon->discount_amount ?? 0) }}
+                                </p>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                {{-- @if ($order->discount_total)
                 <tr>
-                    <th>Tax</th>
-                    <td>{{ currencyformat($order->tax) }}</td>
+                    <th>Coupon</th>
+                    <td>{{ currencyformat($order->discount_total) }}</td>
                 </tr>
+                @endif --}}
+
                 <tr>
                     <th>Total</th>
                     <td>{{ currencyformat($order->total) }}</td>
@@ -86,50 +130,82 @@
                     @foreach($order->items as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->product->title ?? '-' }}</td>
+                            <td>{{ $item->product->title ?? '-' }}
+                                @if($item->custom_data)
+                                    @php
+                                        $customData = is_array($item->custom_data)
+                                            ? $item->custom_data
+                                            : json_decode($item->custom_data, true);
+                                    @endphp
+
+                                    <div class="mt-2 small">
+                                        @foreach($customData as $key => $value)
+                                            @if(!empty($value))
+                                                <div class="d-flex">
+                                                    <span class="fw-semibold me-1">
+                                                        {{ ucwords(str_replace('_', ' ', $key)) }}:
+                                                    </span>
+                                                    <span class="text-muted">
+                                                        {{ $value }}
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </td>
                             <td>{{ currencyformat($item->price) }}</td>
                             <td>{{ $item->quantity }}</td>
-                            <td>{{ currencyformat($item->total) }}</td>
+                            <td>{{ currencyformat($item->subtotal) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
 
             <h4>Transaction</h4>
-            @if($order->transaction)
+            @if($order->latestTransaction)
                 <table class="table table-bordered">
                     <tr>
                         <th>Transaction ID</th>
-                        <td>{{ $order->transaction->transaction_id }}</td>
+                        <td>{{ $order->latestTransaction->transaction_id }}</td>
                     </tr>
                     <tr>
                         <th>Amount</th>
-                        <td>{{ currencyformat($order->transaction->amount) }}</td>
+                        <td>{{ currencyformat($order->latestTransaction->amount) }}</td>
                     </tr>
                     <tr>
                         <th>Payment Method</th>
-                        <td>{{ ucfirst($order->transaction->payment_method) }}</td>
+                        <td>{{ ucfirst($order->latestTransaction->payment_method) }}</td>
                     </tr>
                     <tr>
                         <th>Status</th>
                         <td>
                             @php
-                                $color = match ($order->status) {
+                                $color = match ($order->latestTransaction->status) {
                                     'pending' => 'warning',
-                                    'processing' => 'info',
-                                    'completed' => 'success',
-                                    'cancelled' => 'danger',
+                                    'success' => 'success',
+                                    'failed' => 'danger',
                                     default => 'secondary',
                                 };
                             @endphp
 
                             <span class="badge bg-{{  $color }} text-capitalize px-3 py-2">
-                                {{ ucfirst($order->transaction->status) }}
+                                {{ ucfirst($order->latestTransaction->status) }}
                             </span>
 
                         </td>
                     </tr>
                 </table>
+                @if ($order->notes)
+                    <div class="alert alert-warning d-flex align-items-start gap-2 shadow-sm rounded-3 my-3">
+                        <i class="bi bi-sticky fs-5 mt-1"></i>
+                        <div>
+                            <strong class="d-block mb-1">Order Notes</strong>
+                            <span class="text-muted">{{ $order->notes }}</span>
+                        </div>
+                    </div>
+                @endif
+
             @else
                 <p>No transaction recorded.</p>
             @endif
