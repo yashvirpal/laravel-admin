@@ -118,3 +118,5 @@
     </div>
 </section>
 <!-- copy right section end here -->
+
+<x-fake-notification />
