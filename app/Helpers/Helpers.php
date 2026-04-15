@@ -110,25 +110,131 @@ if (!function_exists('paymentStatusBadge')) {
 
     function paymentStatusBadge($status)
     {
+        $status = strtolower($status ?? '');
+
         return match ($status) {
             'pending' => [
                 'class' => 'bg-warning text-dark',
                 'icon' => 'fa-hourglass-half',
+                'admin_icon' => 'bi-hourglass-split',
                 'text' => 'Pending',
+            ],
+            'initiated' => [
+                'class' => 'bg-info text-dark',
+                'icon' => 'fa-play',
+                'admin_icon' => 'bi-ticket-perforated',
+                'text' => 'Initiated',
+            ],
+            'paid' => [
+                'class' => 'bg-success',
+                'icon' => 'fa-check',
+                'admin_icon' => 'bi-check-circle',
+                'text' => 'Paid',
+            ],
+            'failed' => [
+                'class' => 'bg-danger',
+                'icon' => 'fa-times',
+                'admin_icon' => 'bi-x-circle',
+                'text' => 'Failed',
+            ],
+            'refunded' => [
+                'class' => 'bg-dark',
+                'icon' => 'fa-undo',
+                'admin_icon' => 'bi-arrow-counterclockwise',
+                'text' => 'Refunded',
+            ],
+            default => [
+                'class' => 'bg-secondary',
+                'icon' => 'fa-circle',
+                'admin_icon' => 'bi-circle',
+                'text' => ucfirst($status),
+            ],
+        };
+    }
+}
+
+if (!function_exists('orderStatusBadge')) {
+
+    function orderStatusBadge($status)
+    {
+        $status = strtolower($status ?? '');
+
+        return match ($status) {
+            'pending' => [
+                'class' => 'bg-warning text-dark',
+                'icon' => 'fa-hourglass-half',
+                'admin_icon' => 'bi-hourglass-split',
+                'text' => 'Pending',
+            ],
+            'processing' => [
+                'class' => 'bg-info text-dark',
+                'icon' => 'fa-spinner',
+                'admin_icon' => 'bi-gear',
+                'text' => 'Processing',
             ],
             'completed' => [
                 'class' => 'bg-success',
                 'icon' => 'fa-check',
+                'admin_icon' => 'bi-check-circle',
                 'text' => 'Completed',
             ],
             'cancelled' => [
                 'class' => 'bg-danger',
                 'icon' => 'fa-times',
+                'admin_icon' => 'bi-x-circle',
                 'text' => 'Cancelled',
+            ],
+            'refunded' => [
+                'class' => 'bg-dark',
+                'icon' => 'fa-undo',
+                'admin_icon' => 'bi-arrow-counterclockwise',
+                'text' => 'Refunded',
             ],
             default => [
                 'class' => 'bg-secondary',
                 'icon' => 'fa-circle',
+                'admin_icon' => 'bi-circle',
+                'text' => ucfirst($status),
+            ],
+        };
+    }
+}
+
+if (!function_exists('transactionStatusBadge')) {
+
+    function transactionStatusBadge($status)
+    {
+        $status = strtolower($status ?? '');
+
+        return match ($status) {
+            'pending' => [
+                'class' => 'bg-warning text-dark',
+                'icon' => 'fa-hourglass-half',
+                'admin_icon' => 'bi-hourglass-split',
+                'text' => 'Pending',
+            ],
+            'success' => [
+                'class' => 'bg-success',
+                'icon' => 'fa-check',
+                'admin_icon' => 'bi-check-circle',
+                'text' => 'Success',
+            ],
+            'failed' => [
+                'class' => 'bg-danger',
+                'icon' => 'fa-times',
+                'admin_icon' => 'bi-x-circle',
+                'text' => 'Failed',
+            ],
+            'refunded' => [
+                'class' => 'bg-dark',
+                'icon' => 'fa-undo',
+                'admin_icon' => 'bi-arrow-counterclockwise',
+                'text' => 'Refunded',
+            ],
+            default => [
+                'class' => 'bg-secondary',
+                'icon' => 'fa-circle',
+                'admin_icon' => 'bi-circle',
                 'text' => ucfirst($status),
             ],
         };

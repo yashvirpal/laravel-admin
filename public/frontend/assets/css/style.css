@@ -5570,9 +5570,9 @@ account page css end here
     margin-top: 5px;
 }
 
-section.account-sec .main-content .table-responsive td span.badge {
+/* section.account-sec .main-content .table-responsive td span.badge {
     background: #ffc107 !important;
-}
+} */
 
 .form-switch input.form-check-input:focus {
     box-shadow: none !important;

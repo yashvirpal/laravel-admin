@@ -19,8 +19,10 @@
                             <td>{{ dateFormat($order->created_at) }}</td>
                             <td>{{ currencyformat($order->total) }}</td>
                             <td>
+                               
                                 @php
-                                    $status = paymentStatusBadge($order->status);
+                                    $status = orderStatusBadge($order->status);
+                                   
                                 @endphp
                                 <span class="badge rounded-pill {{ $status['class'] }}">
                                     <i class="fas {{ $status['icon'] }} me-1"></i>

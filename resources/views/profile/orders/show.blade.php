@@ -25,8 +25,26 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p><strong>Date:</strong> {{ dateFormat($order->created_at) }}</p>
-                                            <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
-                                            <p><strong>Payment Status:</strong> {{ ucfirst($order->payment_status) }}</p>
+                                            @php
+                                                $orderBadge = orderStatusBadge($order->status);
+                                                $paymentBadge = paymentStatusBadge($order->payment_status);
+                                            @endphp
+
+                                            <p>
+                                                <strong>Order Status:</strong>
+                                                <span class="badge {{ $orderBadge['class'] }}">
+                                                    <i class="fa {{ $orderBadge['icon'] }}"></i>
+                                                    {{ $orderBadge['text'] }}
+                                                </span>
+                                            </p>
+
+                                            <p>
+                                                <strong>Payment Status:</strong>
+                                                <span class="badge {{ $paymentBadge['class'] }}">
+                                                    <i class="fa {{ $paymentBadge['icon'] }}"></i>
+                                                    {{ $paymentBadge['text'] }}
+                                                </span>
+                                            </p>
                                             <p><strong>Shipping Method:</strong> {{ $order->shipping_method ?? 'N/A' }}</p>
                                         </div>
                                         <div class="col-md-6 text-md-end">

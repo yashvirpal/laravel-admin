@@ -61,18 +61,28 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Status</th>
+                    <th>Order Status</th>
                     <td>
                         @php
-                            $color = match ($order->status) {
-                                'pending' => 'warning',
-                                'processing' => 'info',
-                                'completed' => 'success',
-                                'cancelled' => 'danger',
-                                default => 'secondary',
-                            };
+                            $status = orderStatusBadge($order->status);
                         @endphp
-                        <span class="badge bg-{{  $color }} text-capitalize px-3 py-2">{{ $order->status }}</span>
+                        <span class="badge rounded-pill {{ $status['class'] }}">
+                            <i class="bi {{ $status['admin_icon'] }} me-1"></i>
+                            {{ $status['text'] }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Payment Status</th>
+                    <td>
+                        @php
+                            $status = paymentStatusBadge($order->payment_status);
+                        @endphp
+                        <span class="badge rounded-pill {{ $status['class'] }}">
+                            <i class="bi {{ $status['admin_icon'] }} me-1"></i>
+                            {{ $status['text'] }}
+                        </span>
+
                     </td>
                 </tr>
                 <tr>
@@ -86,26 +96,31 @@
                         <td>{{ currencyformat($order->tax_total) }}</td>
                     </tr>
                 @endif
-                @if($order->coupons->count())
+                @if($order->coupons->isNotEmpty())
                     <tr>
                         <th>Applied Coupons</th>
                         <td>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($order->coupons as $coupon)
-                                    <div class="border rounded-3 px-3 py-2 shadow-sm bg-light">
-                                        <div class="fw-semibold text-dark">
-                                            <i class="bi bi-ticket-perforated me-1"></i>
-                                            {{ $coupon->code }}
-                                        </div>
-                                        <div class="text-success small">
-                                            - {{ currencyformat($coupon->discount_amount ?? 0) }}
-                                        </div>
+                            @foreach($order->coupons as $coupon)
+                                <div class="d-flex align-items-center mb-1">
+
+                                    <div class="text-success fw-semibold me-2">
+                                        - {{ currencyformat($coupon->discount_amount ?? 0) }}
                                     </div>
-                                @endforeach
-                            </div>
+
+                                    <div class="text-muted small">
+                                        (<i class="bi bi-ticket-perforated me-1"></i> {{ $coupon->code }})
+                                    </div>
+
+                                </div>
+                            @endforeach
                         </td>
                     </tr>
                 @endif
+                <tr>
+                    <th>Shipping:</th>
+                    <td>{{ $order->shipping_total > 0 ? currencyformat($order->shipping_total) : 'Free' }}</td>
+                </tr>
+
                 {{-- @if ($order->discount_total)
                 <tr>
                     <th>Coupon</th>
@@ -185,18 +200,12 @@
                         <th>Status</th>
                         <td>
                             @php
-                                $color = match ($order->latestTransaction->status) {
-                                    'pending' => 'warning',
-                                    'success' => 'success',
-                                    'failed' => 'danger',
-                                    default => 'secondary',
-                                };
+                                $status = transactionStatusBadge($order->latestTransaction->status);
                             @endphp
-
-                            <span class="badge bg-{{  $color }} text-capitalize px-3 py-2">
-                                {{ ucfirst($order->latestTransaction->status) }}
+                            <span class="badge rounded-pill {{ $status['class'] }}">
+                                <i class="fas {{ $status['icon'] }} me-1"></i>
+                                {{ $status['text'] }}
                             </span>
-
                         </td>
                     </tr>
                 </table>
