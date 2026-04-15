@@ -80,27 +80,31 @@
                     <td>{{ currencyformat($order->subtotal) }}</td>
                 </tr>
 
-                @if ($order->tax_total)
+                @if ($order->tax_total > 0)
                     <tr>
                         <th>Tax</th>
                         <td>{{ currencyformat($order->tax_total) }}</td>
                     </tr>
                 @endif
                 @if($order->coupons->count())
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong>Applied Coupons</strong>
-                        </div>
-                        <div class="card-body">
-                            @foreach($order->coupons as $coupon)
-                                <p>
-                                    <strong>Code:</strong> {{ $coupon->code }} <br>
-                                    <strong>Discount:</strong>
-                                    {{ currencyformat($coupon->discount_amount ?? 0) }}
-                                </p>
-                            @endforeach
-                        </div>
-                    </div>
+                    <tr>
+                        <th>Applied Coupons</th>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach($order->coupons as $coupon)
+                                    <div class="border rounded-3 px-3 py-2 shadow-sm bg-light">
+                                        <div class="fw-semibold text-dark">
+                                            <i class="bi bi-ticket-perforated me-1"></i>
+                                            {{ $coupon->code }}
+                                        </div>
+                                        <div class="text-success small">
+                                            - {{ currencyformat($coupon->discount_amount ?? 0) }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </td>
+                    </tr>
                 @endif
                 {{-- @if ($order->discount_total)
                 <tr>
