@@ -128,6 +128,7 @@ class HomeController extends Controller
             'cart', 'checkout' => $this->renderCartPage($page, $template),
             'wishlist' => $this->renderWishlistPage($page, $template),
             'shop' => $this->renderShopPage($page, $template),
+            'order-success-failed' => $this->renderOrderSuccessFailedPage($page, $template),
             'auth' => $this->renderAuthPage($page),
             default => view("frontend.$template", compact('page')),
         };
@@ -163,6 +164,38 @@ class HomeController extends Controller
             ->get();
 
         return view("frontend.$template", compact('page', 'wishlists'));
+    }
+
+    private function renderOrderSuccessFailedPage(Page $page, string $template)
+    {
+        $encryptedOrder = request('order');
+
+        $order = null;
+
+        if ($encryptedOrder) {
+            try {
+                $orderId = decrypt($encryptedOrder);
+
+                $order = \App\Models\Order::with(['items', 'coupons'])
+                    ->where('id', $orderId)
+                    ->when(auth()->check(), function ($q) {
+                        $q->where('user_id', auth()->id());
+                    })
+                    ->first();
+
+            } catch (\Exception $e) {
+                $order = null; // invalid or tampered ID
+            }
+        }
+
+        // detect status
+        $status = request()->has('success') ? 'success' : (request()->has('failed') ? 'failed' : null);
+
+        return view("frontend.$template", compact(
+            'page',
+            'order',
+            'status'
+        ));
     }
 
     private function renderShopPage(Page $page, string $template)

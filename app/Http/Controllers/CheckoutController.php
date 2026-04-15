@@ -130,8 +130,7 @@ class CheckoutController extends Controller
                     'redirect_url' => route('page', 'checkout'),
                 ]);
             }
-
-            return redirect()->route('order-failed');
+            return redirect()->route('page', 'checkout');
 
         } catch (ValidationException $e) {
             if ($request->ajax()) {
@@ -204,8 +203,9 @@ class CheckoutController extends Controller
                 'success' => true,
                 'message' => 'Order placed successfully!',
                 'redirect_url' => route('page', [
-                    'slug' => 'thank-you',
+                    'slug' => 'order',
                     'order' => encrypt($order->id),
+                    'success' => 1,
                 ]),
             ]);
 
@@ -349,18 +349,19 @@ class CheckoutController extends Controller
                     'response_data' => $status, // full response array from checkStatus
                 ]);
                 return redirect()->route('page', [
-                    'slug' => 'thank-you',
+                    'slug' => 'order',
                     'order' => encrypt($order->id),
+                    'success' => 1
                 ]);
-            }
-
-            if ($state === 'PENDING') {
-                return redirect()->route('order-failed')->with('error', 'Payment is pending. Please wait or contact support.');
             }
 
             $order->update(['payment_status' => 'failed']);
 
-            return redirect()->route('order-failed')->with('error', 'Payment failed. Please try again.');
+            return redirect()->route('page', [
+                'slug' => 'order',
+                'order' => encrypt($order->id),
+                'failed' => 1
+            ]);
 
         } catch (\Exception $e) {
             Log::error('PhonePe callback error', [
@@ -368,7 +369,11 @@ class CheckoutController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->route('order-failed')->with('error', 'Something went wrong. Please contact support.');
+            return redirect()->route('page', [
+                'slug' => 'order',
+                'order' => encrypt($order->id),
+                'failed' => 1
+            ]);
         }
     }
 

@@ -122,7 +122,7 @@ class PageSeeder extends Seeder
             ],
             'Thank You' => [
                 'template' => 'thankyou',
-                'description' => '',
+                'description' => 'Thankyou',
             ],
             'Cart' => [
                 'template' => 'cart',
@@ -156,10 +156,11 @@ class PageSeeder extends Seeder
                 'template' => 'category',
                 'description' => '',
             ],
-            'Order Failed' => [
-                'template' => 'order-failed',
+            'Order' => [
+                'template' => 'order-success-failed',
                 'description' => '',
             ],
+            
         ];
 
         foreach ($pages as $title => $data) {

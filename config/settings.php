@@ -54,7 +54,8 @@ return [
         'category' => 'shop',
         'auth' => 'Auth',
         'search' => 'Search',
-        'thankyou'=>"Thankyou"
+        'thankyou' => "Thankyou",
+        'order-success-failed' => "Order Success/Failed",
     ],
 
     'global_section_templates' => [
