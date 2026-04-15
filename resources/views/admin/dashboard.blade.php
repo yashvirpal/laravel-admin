@@ -4,44 +4,51 @@
     <div class="row">
         {{-- Stats Overview --}}
         <div class="col-md-3">
-            <div class="info-box text-bg-primary shadow-sm">
-                <span class="info-box-icon"><i class="bi bi-people-fill"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Users</span>
-                    <span class="info-box-number">{{ $totalUsers }}</span>
+            <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
+                <div class="info-box text-bg-primary shadow-sm">
+                    <span class="info-box-icon"><i class="bi bi-people-fill"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Users</span>
+                        <span class="info-box-number">{{ $totalUsers }}</span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="info-box text-bg-success shadow-sm">
-                <span class="info-box-icon"><i class="bi bi-box-seam"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Products</span>
-                    <span class="info-box-number">{{ $totalProducts }}</span>
+            <a href="{{ route('admin.products.index') }}" class="text-decoration-none">
+                <div class="info-box text-bg-success shadow-sm">
+                    <span class="info-box-icon"><i class="bi bi-box-seam"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Products</span>
+                        <span class="info-box-number">{{ $totalProducts }}</span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="info-box text-bg-warning shadow-sm">
-                <span class="info-box-icon"><i class="bi bi-cart-check-fill"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Orders</span>
-                    <span class="info-box-number">{{ $totalOrders }}</span>
+            <a href="{{ route('admin.orders.index') }}" class="text-decoration-none">
+                <div class="info-box text-bg-warning shadow-sm">
+                    <span class="info-box-icon"><i class="bi bi-cart-check-fill"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Orders</span>
+                        <span class="info-box-number">{{ $totalOrders }}</span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="info-box text-bg-danger shadow-sm">
-                <span class="info-box-icon"><i class="bi bi-cash"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Total Sales</span>
-                    <span
-                        class="info-box-number">{{ currencyformat($totalSales) }}</span>
+            <a href="{{ route('admin.transactions.index') }}" class="text-decoration-none">
+                <div class="info-box text-bg-danger shadow-sm">
+                    <span class="info-box-icon"><i class="bi bi-cash"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Sales</span>
+                        <span class="info-box-number">{{ currencyformat($totalSales) }}</span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -77,7 +84,8 @@
                     <ul class="list-group">
                         @foreach ($latestUsers as $user)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $user->name }}
+                                <a href="{{ route('admin.users.edit', $user->id) }}" class="text-decoration-none">
+                                    {{ $user->name }}</a>
                                 <small class="text-muted">{{ $user->created_at->diffForHumans() }}</small>
                             </li>
                         @endforeach
@@ -93,7 +101,9 @@
                     <ul class="list-group">
                         @foreach ($latestOrders as $order)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                #{{ $order->order_number }} — {{ currencyformat($order->total_amount) }}
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="text-decoration-none">
+                                    #{{ $order->order_number }} —
+                                    {{ currencyformat($order->total) }}</a>
                                 <span
                                     class="badge bg-{{ $order->status === 'completed' ? 'success' : 'secondary' }}">{{ ucfirst($order->status) }}</span>
                             </li>

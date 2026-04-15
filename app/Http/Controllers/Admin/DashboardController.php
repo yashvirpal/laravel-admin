@@ -30,7 +30,7 @@ class DashboardController extends Controller
 
         // --- Recent Activity ---
         $latestUsers = User::latest()->take(5)->get(['id', 'name', 'email', 'created_at']);
-        $latestOrders = Order::latest()->take(5)->get(['id', 'order_number', 'total_amount', 'status', 'created_at']);
+        $latestOrders = Order::latest()->take(5)->get(['id', 'order_number', 'total', 'status', 'created_at']);
 
         // --- Chart Data (Last 7 days sales) ---
         $salesData = Transaction::selectRaw('DATE(created_at) as date, SUM(amount) as total')
