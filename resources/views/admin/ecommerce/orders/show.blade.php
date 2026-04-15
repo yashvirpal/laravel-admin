@@ -203,7 +203,7 @@
                                 $status = transactionStatusBadge($order->latestTransaction->status);
                             @endphp
                             <span class="badge rounded-pill {{ $status['class'] }}">
-                                <i class="fas {{ $status['icon'] }} me-1"></i>
+                                <i class="bi {{ $status['admin_icon'] }} me-1"></i>
                                 {{ $status['text'] }}
                             </span>
                         </td>

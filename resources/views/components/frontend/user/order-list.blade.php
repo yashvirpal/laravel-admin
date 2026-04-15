@@ -4,7 +4,7 @@
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#Order ID</th>
+                    <th>#Order Number</th>
                     <th>Date</th>
                     <th>Total</th>
                     <th>Status</th>
@@ -15,14 +15,18 @@
                 @if($items->count() > 0)
                     @foreach($items as $order)
                         <tr>
-                            <td>#{{ $order->id }}</td>
+                            <td class="order_id{{ $order->id }}">
+                                <a href="{{ route('profile.orders.show', $order->id) }}">
+                                    #{{ $order->order_number }}
+                                </a>
+                            </td>
                             <td>{{ dateFormat($order->created_at) }}</td>
                             <td>{{ currencyformat($order->total) }}</td>
                             <td>
-                               
+
                                 @php
                                     $status = orderStatusBadge($order->status);
-                                   
+
                                 @endphp
                                 <span class="badge rounded-pill {{ $status['class'] }}">
                                     <i class="fas {{ $status['icon'] }} me-1"></i>
