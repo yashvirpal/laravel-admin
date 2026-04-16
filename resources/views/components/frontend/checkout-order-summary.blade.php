@@ -70,16 +70,20 @@
         <div class="shipping-header">
             <span><i class="fas fa-shipping-fast"></i> Shipping Method</span>
         </div>
+        @php
+            $selectedShipping = $cart->shipping_label ?? null;
+            $selectedAmount = $cart->shipping_total ?? null;
+        @endphp
         @foreach (enabledShippingMethods() as $sm => $smData)
+        @php
+            $isChecked =
+                ($selectedShipping && $selectedShipping === labelFromKey($sm)) ||
+                ($selectedAmount !== null && (float)$selectedAmount == (float)$smData['amount']) ||
+                ($loop->first && !$selectedShipping);
+        @endphp
+
             <div class="shipping-option">
-                <input type="radio" 
-                       id="sm_{{ $sm }}" 
-                       name="shipping" 
-                       value="{{ $sm }}"
-                       data-amount="{{ $smData['amount'] }}"
-                       data-label="{{ labelFromKey($sm) }}"
-                       {{ $loop->first ? 'checked' : '' }}
-                       onchange="updateShipping(this)">
+                <input type="radio" id="sm_{{ $sm }}" name="shipping" value="{{ $sm }}" data-amount="{{ $smData['amount'] }}" data-label="{{ labelFromKey($sm) }}" {{ $isChecked ? 'checked' : '' }} onchange="updateShipping(this)"/>
                 <label for="sm_{{ $sm }}">
                     {{ labelFromKey($sm) }}
                     <span class="shipping-price">({{ currencyformat($smData['amount']) }})</span>
