@@ -336,12 +336,11 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
 
 // Show loader
 export function showLoader() {
-    const loader = document.getElementById('ajax-loader');
-    if (loader) loader.classList.remove('hidden');
+    document.getElementById('ajax-overlay').classList.add('active');
+    document.body.style.pointerEvents = 'none';
 }
 
-// Hide loader
 export function hideLoader() {
-    const loader = document.getElementById('ajax-loader');
-    if (loader) loader.classList.add('hidden');
+    document.getElementById('ajax-overlay').classList.remove('active');
+    document.body.style.pointerEvents = '';
 }

@@ -392,15 +392,15 @@ function toggleContent(contentId, arrowId) {
 
 
 /* Loader functionality */
-function showLoader() {
-  document.getElementById('ajax-overlay').classList.add('active');
-  document.body.style.pointerEvents = 'none';
-}
+// function showLoader() {
+//   document.getElementById('ajax-overlay').classList.add('active');
+//   document.body.style.pointerEvents = 'none';
+// }
 
-function hideLoader() {
-  document.getElementById('ajax-overlay').classList.remove('active');
-  document.body.style.pointerEvents = '';
-}
+// function hideLoader() {
+//   document.getElementById('ajax-overlay').classList.remove('active');
+//   document.body.style.pointerEvents = '';
+// }
 
 
 
