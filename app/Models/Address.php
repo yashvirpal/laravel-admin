@@ -5,7 +5,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 class Address extends Model
 {
     protected $fillable = [
@@ -88,17 +88,36 @@ class Address extends Model
     }
 
     // Methods
-    public function makeDefault()
+    // public function makeDefault()
+    // {
+    //     // Remove default from other addresses of same type
+    //     static::where('user_id', $this->user_id)
+    //         ->where('type', $this->type)
+    //         ->where('id', '!=', $this->id)
+    //         ->update(['is_default' => false]);
+
+    //     $this->update(['is_default' => true]);
+
+    //     return $this;
+    // }
+    public function makeDefault(): static
     {
-        // Remove default from other addresses of same type
-        static::where('user_id', $this->user_id)
-            ->where('type', $this->type)
-            ->where('id', '!=', $this->id)
-            ->update(['is_default' => false]);
+        if (!$this->exists) {
+            throw new \RuntimeException("Cannot set default on an unsaved Address.");
+        }
 
-        $this->update(['is_default' => true]);
+        DB::transaction(function () {
+            // Clear default on all OTHER addresses of same type for this user
+            Address::where('user_id', $this->user_id)
+                ->where('type', $this->type)
+                ->where('id', '!=', $this->id) // exclude self
+                ->update(['is_default' => false]);
 
-        return $this;
+            // Set this one as default
+            $this->forceFill(['is_default' => true])->save();
+        });
+
+        return $this->fresh();
     }
 
     // public function toArray()
@@ -114,7 +133,7 @@ class Address extends Model
     //         'city' => $this->city,
     //         'state' => $this->state,
     //         'country' => $this->country,
-    //         'postal_code' => $this->postal_code,
+    //         'postal_code' => $this->zip,
     //     ];
     // }
 }

@@ -5,8 +5,10 @@
     </h5>
     <div class="row">
 
-        <input type="hidden" name="billing_address_id" value="{{ old('billing_address_id', $billingAddress->id ?? '')}}" />
-        <input type="hidden" name="shipping_address_id" value="{{ old('shipping_address_id', $shippingAddress->id ?? '')}}" />
+        <input type="hidden" name="billing_address_id"
+            value="{{ old('billing_address_id', $billingAddress->id ?? '')}}" />
+        <input type="hidden" name="shipping_address_id"
+            value="{{ old('shipping_address_id', $shippingAddress->id ?? '')}}" />
         <div class="col-md-6">
             <div class="input-field">
                 <label>First Name <span class="required-star">*</span></label>
@@ -77,7 +79,7 @@
     <div class="notification-card" style="margin-top: 25px;">
         <div class="checkbox-group d-none" style="margin: 0;">
 
-            <input type="checkbox" name="differentShipping" id="differentShipping"
+            <input type="checkbox" name="differentShipping" id="differentShipping" value="1" checked
                 onclick="toggleContent('shippingContent')">
             <label for="differentShipping">Ship to a different address?</label>
         </div>

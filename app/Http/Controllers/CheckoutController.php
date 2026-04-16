@@ -184,6 +184,8 @@ class CheckoutController extends Controller
                 $shippingAddress->save();
             }
 
+           // dd($shippingAddress, $billingAddress, Address::where('user_id', auth()->id())->get()->toArray());
+
             // 4️⃣ Create Order
             $order = $this->createOrderFromCart($user, $billingAddress, $shippingAddress, $cart, $request);
 
@@ -469,7 +471,7 @@ class CheckoutController extends Controller
     private function createOrUpdateBillingAddress(Request $request, int $userId): Address
     {
         $data = $request->validate([
-            'billing_address_id' => 'nullable|exists:addresses,id',
+            'billing_address_id' => 'nullable|exists:addresses,id,user_id,' . $userId,
             'billing_first_name' => 'required|string',
             'billing_last_name' => 'required|string',
             'billing_address_line1' => 'required|string',
@@ -501,11 +503,14 @@ class CheckoutController extends Controller
 
             if ($address) {
                 $address->update($fields);
+                $address->makeDefault();
                 return $address->fresh();
             }
         }
 
-        return Address::create($fields);
+        $address = Address::create($fields);
+        $address->makeDefault();
+        return $address->fresh();
     }
 
     /**
@@ -514,7 +519,7 @@ class CheckoutController extends Controller
     private function createOrUpdateShippingAddress(Request $request, int $userId): Address
     {
         $data = $request->validate([
-            'shipping_address_id' => 'nullable|exists:addresses,id',
+            'shipping_address_id' => 'nullable|exists:addresses,id,user_id,' . $userId,
             'shipping_first_name' => 'required|string',
             'shipping_last_name' => 'required|string',
             'shipping_address_line1' => 'required|string',
@@ -546,11 +551,14 @@ class CheckoutController extends Controller
 
             if ($address) {
                 $address->update($fields);
+                $address->makeDefault();
                 return $address->fresh();
             }
         }
 
-        return Address::create($fields);
+        $address = Address::create($fields);
+        $address->makeDefault();
+        return $address->fresh();
     }
 
     private function createOrderFromCart($user, $billing, $shipping, $cart, $request): Order
