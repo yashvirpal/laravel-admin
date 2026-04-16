@@ -16,7 +16,7 @@ class SettingSeeder extends Seeder
 
         foreach (config('settings.payment_gateways') as $gateway) {
             $paymentGateways[$gateway] = [
-                'enabled' => in_array($gateway, ['phonepe', 'cod']) ? '1' : '0',
+                'enabled' => in_array($gateway, ['phonepe']) ? '1' : '0',
                 'description' => null,
                 'merchant_id' => null,
                 'secret_key' => null,
