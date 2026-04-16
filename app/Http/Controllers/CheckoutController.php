@@ -325,7 +325,7 @@ class CheckoutController extends Controller
 
                 $order->update(['payment_status' => 'failed']);
 
-                return redirect()->route('order-failed')->with('error', 'Payment could not be verified. Please try again.');
+                return redirect()->route('page', ['slug' => 'order', 'order' => encrypt($order->id), 'failed' => 1,])->with('error', 'Payment could not be verified. Please try again.');
             }
 
             // ✅ Verify with PhonePe
