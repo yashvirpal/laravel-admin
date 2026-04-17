@@ -12,6 +12,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVariant;
 use App\Models\ProductFaq;
+use App\Models\ProductGallery;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
@@ -186,7 +187,20 @@ class ProductSeeder extends Seeder
                         'author_id' => $author?->id,
                     ]
                 );
-
+                ProductGallery::create([
+                    'product_id' => $product->id,
+                    'image' => null,
+                    'alt' => "CB-Gallery",
+                    'sort_order' => 1,
+                    //'is_default' => 1,
+                ]);
+                ProductGallery::create([
+                    'product_id' => $product->id,
+                    'image' => null,
+                    'alt' => "CB-Gallery-2",
+                    'sort_order' => 2,
+                    'is_default' => 1,
+                ]);
                 // 4️⃣ Attach random categories
                 $product->categories()->sync(
                     $categoriesAll->random(rand(1, 2))->pluck('id')->toArray()

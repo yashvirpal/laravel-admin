@@ -139,7 +139,7 @@ return new class extends Migration {
         Schema::create('product_galleries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->string('image'); // filename or path
+            $table->string('image')->nullable(); // filename or path
             $table->string('alt')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_default')->default(false);
