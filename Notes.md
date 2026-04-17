@@ -56,11 +56,13 @@ sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database
 root@72.61.174.220
 
 scp docker.zip root@72.61.174.220:/var/jv
+#############################
+Already Product i Cart 
+Checkout page Button Disabled procced wali 
 
 
 
-
-
+#####################################
 mac mini m4 24-512
 --1500 INR
 usb hub -- 8000-14000 INR

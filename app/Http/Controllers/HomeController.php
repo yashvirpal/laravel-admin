@@ -250,6 +250,12 @@ class HomeController extends Controller
             $page = Page::where('slug', '404')->first();
             return view('frontend.404', compact('page'));
         }
+        // Load current cart
+        // $cart = $this->cartService->getCart(auth()->id(), session()->getId());
+        // $cartItems = $cart->items()->with('variant.values.attribute')->where('product_id', $product->id)->get();
+        // $product->cart_qty = $cartItems->sum('quantity');
+        // $product->cart_items = $cartItems;
+
         $categoryIds = $product->categories->pluck('id');
         $relatedProducts = Product::active()
             ->whereHas('categories', function ($q) use ($categoryIds) {

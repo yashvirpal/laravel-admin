@@ -23,55 +23,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>Date:</strong> {{ dateFormat($order->created_at) }}</p>
-                                            @php
-                                                $orderBadge = orderStatusBadge($order->status);
-                                                $paymentBadge = paymentStatusBadge($order->payment_status);
-                                            @endphp
-
-                                            <p>
-                                                <strong>Order Status:</strong>
-                                                <span class="badge {{ $orderBadge['class'] }}">
-                                                    <i class="fa {{ $orderBadge['icon'] }}"></i>
-                                                    {{ $orderBadge['text'] }}
-                                                </span>
-                                            </p>
-
-                                            <p>
-                                                <strong>Payment Status:</strong>
-                                                <span class="badge {{ $paymentBadge['class'] }}">
-                                                    <i class="fa {{ $paymentBadge['icon'] }}"></i>
-                                                    {{ $paymentBadge['text'] }}
-                                                </span>
-                                            </p>
-                                            <p><strong>Shipping Method:</strong> {{ $order->shipping_method ?? 'N/A' }}</p>
-                                        </div>
-                                        <div class="col-md-6 text-md-end">
-                                            <p><strong>Subtotal:</strong> {{ currencyformat($order->subtotal) }}</p>
-                                            @if($order->discount_total > 0)
-                                                <p><strong>Discount:</strong> -{{ currencyformat($order->discount_total) }}</p>
-                                            @endif
-                                            @if($order->tax_total > 0)
-                                                <p><strong>Tax:</strong> {{ currencyformat($order->tax_total) }}</p>
-                                            @endif
-                                            <p><strong>Shipping:</strong>
-                                                {{ $order->shipping_total > 0 ? currencyformat($order->shipping_total) : 'Free' }}
-                                            </p>
-                                            <hr>
-                                            <p class="fs-5"><strong>Total:</strong> {{ currencyformat($order->total) }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {{-- ================= ADDRESSES ================= --}}
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <strong>Shipping & Billing</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4 mt-3 mt-md-0">
                                             <h6 class="fw-bold">Shipping Address</h6>
                                             @if($order->shippingAddress)
                                                 <p class="mb-0">{{ $order->shippingAddress->first_name }}
@@ -93,7 +45,7 @@
                                             @endif
                                         </div>
 
-                                        <div class="col-md-6 mt-3 mt-md-0">
+                                        <div class="col-md-4 mt-3 mt-md-0">
                                             <h6 class="fw-bold">Billing Address</h6>
                                             @if($order->billingAddress)
                                                 <p class="mb-0">{{ $order->billingAddress->first_name }}
@@ -113,15 +65,90 @@
                                                 <p class="text-muted">Not available</p>
                                             @endif
                                         </div>
+
+                                        <div class="col-md-4 mt-3 mt-md-0">
+                                            <p><strong>Date:</strong> {{ dateFormat($order->created_at) }}</p>
+                                            @php
+                                                $orderBadge = orderStatusBadge($order->status);
+                                                $paymentBadge = paymentStatusBadge($order->payment_status);
+                                            @endphp
+                                            <p>
+                                                <strong>Order Status:</strong>
+                                                <span class="badge {{ $orderBadge['class'] }}">
+                                                    <i class="fa {{ $orderBadge['icon'] }}"></i>
+                                                    {{ $orderBadge['text'] }}
+                                                </span>
+                                            </p>
+                                            <p>
+                                                <strong>Payment Status:</strong>
+                                                <span class="badge {{ $paymentBadge['class'] }}">
+                                                    <!-- <i class="fa {{ $paymentBadge['icon'] }}"></i> -->
+                                                    {{ $paymentBadge['text'] }}
+                                                </span>
+                                            </p>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
+                            {{-- ================= ADDRESSES ================= --}}
+                            <!-- <div class="card mb-4">
+                                                                                                                                                                                <div class="card-header bg-light">
+                                                                                                                                                                                    <strong>Shipping & Billing</strong>
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <div class="card-body">
+                                                                                                                                                                                    <div class="row">
+                                                                                                                                                                                        <div class="col-md-6">
+                                                                                                                                                                                            <h6 class="fw-bold">Shipping Address</h6>
+                                                                                                                                                                                            @if($order->shippingAddress)
+                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->first_name }}
+                                                                                                                                                                                                    {{ $order->shippingAddress->last_name }}
+                                                                                                                                                                                                </p>
+                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->address_line1 }}</p>
+                                                                                                                                                                                                @if($order->shippingAddress->address_line2)
+                                                                                                                                                                                                    <p class="mb-0">{{ $order->shippingAddress->address_line2 }}</p>
+                                                                                                                                                                                                @endif
+                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->city }},
+                                                                                                                                                                                                    {{ $order->shippingAddress->state }} {{ $order->shippingAddress->zip }}
+                                                                                                                                                                                                </p>
+                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->phone }}</p>
+                                                                                                                                                                                            @elseif($order->shipping_address)
+                                                                                                                                                                                                {{-- fallback to legacy JSON field --}}
+                                                                                                                                                                                                <p class="mb-0">{{ $order->shipping_address }}</p>
+                                                                                                                                                                                            @else
+                                                                                                                                                                                                <p class="text-muted">Not available</p>
+                                                                                                                                                                                            @endif
+                                                                                                                                                                                        </div>
+
+                                                                                                                                                                                        <div class="col-md-6 mt-3 mt-md-0">
+                                                                                                                                                                                            <h6 class="fw-bold">Billing Address</h6>
+                                                                                                                                                                                            @if($order->billingAddress)
+                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->first_name }}
+                                                                                                                                                                                                    {{ $order->billingAddress->last_name }}
+                                                                                                                                                                                                </p>
+                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->address_line1 }}</p>
+                                                                                                                                                                                                @if($order->billingAddress->address_line2)
+                                                                                                                                                                                                    <p class="mb-0">{{ $order->billingAddress->address_line2 }}</p>
+                                                                                                                                                                                                @endif
+                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->city }},
+                                                                                                                                                                                                    {{ $order->billingAddress->state }} {{ $order->billingAddress->zip }}
+                                                                                                                                                                                                </p>
+                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->phone }}</p>
+                                                                                                                                                                                            @elseif($order->billing_address)
+                                                                                                                                                                                                <p class="mb-0">{{ $order->billing_address }}</p>
+                                                                                                                                                                                            @else
+                                                                                                                                                                                                <p class="text-muted">Not available</p>
+                                                                                                                                                                                            @endif
+                                                                                                                                                                                        </div>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div> -->
 
 
                             {{-- ================= PRODUCTS ================= --}}
                             <div class="card mb-4">
                                 <div class="card-header bg-light">
-                                    <strong>Ordered Products</strong>
+                                    <strong>Order Items</strong>
                                 </div>
 
                                 <div class="table-responsive">
@@ -132,7 +159,7 @@
                                                 <th>Variant</th>
                                                 <th>Qty</th>
                                                 <th>Price</th>
-                                                <th>Total</th>
+                                                <th>Sub Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -181,28 +208,53 @@
                                                     </td>
                                                 </tr>
                                             @endforeach
+                                            <tr>
+                                                <td colspan="4" class="text-center"><strong>Subtotal:</strong></td>
+                                                <td>{{ currencyformat($order->subtotal) }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="4" class="text-center"><strong>Shipping:</strong></td>
+                                                <td>
+                                                    {{ $order->shipping_total > 0 ? currencyformat($order->shipping_total) : 'Free' }}
+                                                    <sub> ({{ $order->shipping_method ?? '' }})</sub>
+                                                </td>
+                                            </tr>
+                                            @if($order->tax_total > 0)
+                                                <tr>
+                                                    <td colspan="4" class="text-center"><strong>Tax:</strong></td>
+                                                    <td> {{ currencyformat($order->tax_total) }}</td>
+                                                </tr>
+                                            @endif
+                                            @if($order->discount_total > 0)
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        <strong>Applied Coupons:</strong>
+                                                        @foreach($order->coupons as $coupon)
+                                                            @php
+                                                                $code = $coupon->code;
+                                                            @endphp
+                                                        @endforeach
+                                                    </td>
+                                                    <td>
+                                                        {{ currencyformat($order->discount_total) }}
+                                                        <sub class="">({{ $code ?? '' }})</sub>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                            @if($order->discount_total > 0)
+
+                                            @endif
+                                            <tr>
+                                                <td colspan="4" class="text-center"><strong>Total:</strong></td>
+                                                <td> {{ currencyformat($order->total) }}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
-                            {{-- ================= COUPONS ================= --}}
-                            @if($order->coupons->count())
-                                <div class="card mb-4">
-                                    <div class="card-header bg-light">
-                                        <strong>Applied Coupons</strong>
-                                    </div>
-                                    <div class="card-body">
-                                        @foreach($order->coupons as $coupon)
-                                            <p>
-                                                <strong>Code:</strong> {{ $coupon->code }} <br>
-                                                <strong>Discount:</strong>
-                                                {{ currencyformat($coupon->discount_amount ?? 0) }}
-                                            </p>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
+
 
                             {{-- ================= TRANSACTIONS ================= --}}
                             @if($order->transactions->count())
@@ -211,17 +263,34 @@
                                         <strong>Payment Transactions</strong>
                                     </div>
                                     <div class="card-body">
-                                        @foreach($order->transactions as $transaction)
-                                            <div class="mb-3">
-                                                <p>
-                                                    <strong>Transaction ID:</strong> {{ $transaction->transaction_id }} <br>
-                                                    <strong>Method:</strong> {{ $transaction->payment_method }} <br>
-                                                    <strong>Status:</strong> {{ ucfirst($transaction->status) }} <br>
-                                                    <strong>Amount:</strong> {{ currencyformat($transaction->amount) }}
-                                                </p>
-                                            </div>
-                                            <hr>
-                                        @endforeach
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Transaction ID</th>
+                                                    <th>Method</th>                                                    
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($order->transactions as $transaction)
+                                                    @php
+                                                        $transactionBadge = transactionStatusBadge($transaction->status);
+                                                    @endphp
+                                                    <tr>
+                                                        <td>{{ $transaction->transaction_id }}</td>
+                                                        <td>{{ $transaction->payment_method }}</td>
+                                                        <td>{{ currencyformat($transaction->amount) }}</td>
+                                                        <td>
+                                                            <span class="badge {{ $transactionBadge['class'] }}">
+                                                                <!-- <i class="fa {{ $transactionBadge['icon'] }}"></i> -->
+                                                                {{ $transactionBadge['text'] }}
+                                                            </span>
+                                                        </td>                                                        
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>                                       
                                     </div>
                                 </div>
                             @endif
