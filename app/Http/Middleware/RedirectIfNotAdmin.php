@@ -16,7 +16,9 @@ class RedirectIfNotAdmin
     {
         // If not logged in as admin
         if (!Auth::guard('admin')->check()) {
-            return redirect()->route('admin.login');
+            //return redirect()->route('admin.login');
+            return redirect()->guest(route('admin.login'));
+
         }
 
         // If already logged in, continue to dashboard or requested page
