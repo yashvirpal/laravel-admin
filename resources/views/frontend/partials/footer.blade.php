@@ -8,7 +8,7 @@
                         <h3>Contact Us</h3>
                         <ul>
                             <li>
-                                <i class="fas fa-map-marker-alt"></i> <span>{{ setting('address') ?? '' }}</span>
+                                <i class="fas fa-map-marker-alt"></i> <span>{!! nl2br(e(str_replace('\n', PHP_EOL, setting('address')))) !!}</span>
                             </li>
 
                             <li>

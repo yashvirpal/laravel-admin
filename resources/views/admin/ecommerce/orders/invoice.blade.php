@@ -125,6 +125,11 @@
                 display: none;
             }
         }
+
+        .address-block {
+            line-height: 1.7;
+            margin-top: 6px;
+        }
     </style>
 </head>
 
@@ -135,7 +140,7 @@
         <!-- Store Header -->
         <div class="invoice-header">
             <div class="logo-wrapper">
-                <img src="{{ public_path('frontend/assets/images/logo.webp') }}" alt="{{ config('app.name') }}"
+                <img src="{{ asset('frontend/assets/images/logo.webp') }}" alt="{{ config('app.name') }}"
                     class="invoice-logo">
             </div>
 
@@ -143,7 +148,10 @@
                 <h2 class="store-name">{{ config('app.name') }}</h2>
 
                 @if(setting('address'))
-                    <p><strong>Address:</strong> {{ setting('address') }}</p>
+                    <p>
+                        <strong>Address:</strong>
+                        {!! nl2br(e(str_replace('\n', PHP_EOL, setting('address')))) !!}
+                    </p>
                 @endif
 
                 @if(setting('email'))
@@ -182,24 +190,24 @@
                 <div class="sub-heading">Billing Address</div>
 
                 @if($order->billingAddress)
-                    <p class="mb-1">
+                    <div class="address-block">
                         {{ $order->billingAddress->first_name }}
-                        {{ $order->billingAddress->last_name }}
-                    </p>
-                    <p class="mb-1">{{ $order->billingAddress->address_line1 }}</p>
+                        {{ $order->billingAddress->last_name }}<br>
 
-                    @if($order->billingAddress->address_line2)
-                        <p class="mb-1">{{ $order->billingAddress->address_line2 }}</p>
-                    @endif
+                        {{ $order->billingAddress->address_line1 }}<br>
 
-                    <p class="mb-1">
+                        @if($order->billingAddress->address_line2)
+                            {{ $order->billingAddress->address_line2 }}<br>
+                        @endif
+
                         {{ $order->billingAddress->city }},
                         {{ $order->billingAddress->state }}
-                        {{ $order->billingAddress->zip }}
-                    </p>
-                    <p class="mb-1">{{ $order->billingAddress->phone }}</p>
+                        {{ $order->billingAddress->zip }}<br>
+
+                        {{ $order->billingAddress->phone }}
+                    </div>
                 @else
-                    <p class="muted">Not available</p>
+                    <div class="muted">Not available</div>
                 @endif
             </div>
 
@@ -207,28 +215,27 @@
                 <div class="sub-heading">Shipping Address</div>
 
                 @if($order->shippingAddress)
-                    <p class="mb-1">
+                    <div class="address-block">
                         {{ $order->shippingAddress->first_name }}
-                        {{ $order->shippingAddress->last_name }}
-                    </p>
-                    <p class="mb-1">{{ $order->shippingAddress->address_line1 }}</p>
+                        {{ $order->shippingAddress->last_name }}<br>
 
-                    @if($order->shippingAddress->address_line2)
-                        <p class="mb-1">{{ $order->shippingAddress->address_line2 }}</p>
-                    @endif
+                        {{ $order->shippingAddress->address_line1 }}<br>
 
-                    <p class="mb-1">
+                        @if($order->shippingAddress->address_line2)
+                            {{ $order->shippingAddress->address_line2 }}<br>
+                        @endif
+
                         {{ $order->shippingAddress->city }},
                         {{ $order->shippingAddress->state }}
-                        {{ $order->shippingAddress->zip }}
-                    </p>
-                    <p class="mb-1">{{ $order->shippingAddress->phone }}</p>
+                        {{ $order->shippingAddress->zip }}<br>
+
+                        {{ $order->shippingAddress->phone }}
+                    </div>
                 @else
-                    <p class="muted">Not available</p>
+                    <div class="muted">Not available</div>
                 @endif
             </div>
         </div>
-
         <!-- Order Items -->
         <div class="sub-heading">Order Items</div>
 

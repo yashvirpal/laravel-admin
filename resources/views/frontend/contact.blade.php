@@ -56,7 +56,7 @@
                                 </div>
                                 <div class="contact-item-content">
                                     <h6>Address</h6>
-                                    <p>{{ setting('address') }}</p>
+                                    <p>{!! nl2br(e(str_replace('\n', PHP_EOL, setting('address')))) !!}</p>
                                 </div>
                             </div>
                         @endif

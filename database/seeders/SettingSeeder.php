@@ -52,7 +52,7 @@ class SettingSeeder extends Seeder
             'currency' => 'INR',
             'currency_symbol' => '₹',
             'phone' => '+91 99115 73173',
-            'address' => 'Diksha Mehta, 23b/5 New Rohtak Road, Near Liberty Cinema, Dev Nagar Karol Bagh, New Delhi 110005 Opp. Bikaner.',
+            'address' => 'Diksha Mehta, 23b/5 New Rohtak Road,\n Near Liberty Cinema, Dev Nagar Karol Bagh, \n New Delhi 110005 Opp. Bikaner.',
             'email' => 'jovialvision04@gmail.com',
             'map' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28010.10624782622!2d77.17272198213867!3d28.651834452807428!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029c5f402ed3%3A0x942174294c9dd946!2sKarol%20Bagh%2C%20New%20Delhi%2C%20Delhi!5e0!3m2!1sen!2sin!4v1776518039722!5m2!1sen!2sin',
             'footer_text' => '© 2025 My Awesome Site. All rights reserved.',
