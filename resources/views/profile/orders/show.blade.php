@@ -22,7 +22,7 @@
                                     <strong>Order Summary</strong>
                                 </div>
                                 <div class="card-body">
-                                    
+
                                     <div class="row g-4">
 
                                         <!-- ORDER INFO -->
@@ -180,7 +180,17 @@
                                                     <td>
                                                         <a
                                                             href="{{ route('products.details', $item->product->slug) }}">{{ $item->product->title ?? 'N/A' }}</a>
+                                                        @if(!empty($item->variant_name))
+                                                            <div class="small text-muted">
+                                                                <strong>Variant:</strong> {{ $item->variant_name }}
+                                                            </div>
+                                                        @endif
 
+                                                        @if(!empty($item->sku))
+                                                            <div class="small text-muted">
+                                                                <strong>SKU:</strong> {{ $item->sku }}
+                                                            </div>
+                                                        @endif
                                                         @if($item->custom_data)
                                                             @php
                                                                 $customData = is_array($item->custom_data)

@@ -41,7 +41,7 @@ return new class extends Migration {
             $table->enum('payment_status', ['pending', 'initiated', 'paid', 'failed', 'refunded'])->default('pending');
 
             // Order status
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled', 'refunded'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'])->default('pending');
 
             // Notes
             $table->text('notes')->nullable();

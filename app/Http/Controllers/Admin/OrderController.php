@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 use Yajra\DataTables\Facades\DataTables;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class OrderController extends Controller
 {
@@ -30,15 +32,14 @@ class OrderController extends Controller
                     return currencyformat($order->total);
                 })
                 ->addColumn('status', function ($order) {
-                    $color = match ($order->status) {
-                        'pending' => 'warning',
-                        'processing' => 'info',
-                        'completed' => 'success',
-                        'cancelled' => 'danger',
-                        default => 'secondary',
-                    };
+                    $status = orderStatusBadge($order->status);
+                    return '<span class="badge rounded-pill ' . $status['class'] . ' mt-1"><i class="bi ' . $status['admin_icon'] . ' me-1"></i>' . $status['text'] . '</span>';
 
-                    return '<span class="badge bg-' . $color . ' text-capitalize px-3 py-2">' . $order->status . '</span>';
+                })
+                ->addColumn('payment_status', function ($order) {
+                    $status = paymentStatusBadge($order->payment_status);
+                    return '<span class="badge rounded-pill ' . $status['class'] . ' mt-1"><i class="bi ' . $status['admin_icon'] . ' me-1"></i>' . $status['text'] . '</span>';
+
                 })
                 ->addColumn('created', function ($order) {
                     return dateFormat($order->created_at); // formatted date & time
@@ -56,9 +57,10 @@ class OrderController extends Controller
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                            </form>';
+                    $delete = "";
                     return $view . $edit . $delete;
                 })
-                ->rawColumns(['status', 'action'])
+                ->rawColumns(['status', 'action', 'payment_status'])
                 ->make(true);
         }
 
@@ -118,7 +120,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['items.product', 'latestTransaction', 'user','coupons','billingAddress','shippingAddress']);
+        $order->load(['items.product', 'latestTransaction', 'user', 'coupons', 'billingAddress', 'shippingAddress']);
         return view('admin.ecommerce.orders.show', compact('order'));
     }
 
@@ -182,5 +184,58 @@ class OrderController extends Controller
     {
         $order->delete();
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+    }
+
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|string'
+        ]);
+        $order->update([
+            'status' => $request->status
+        ]);
+        return back()->with('success', 'Order status updated successfully.');
+    }
+    // public function invoice(Order $order)
+    // {
+    //     return view('admin.ecommerce.orders.invoice', compact('order'));
+    // }
+    // public function printInvoice(Order $order)
+    // {
+    //     return view('admin.ecommerce.orders.invoice-print', compact('order'));
+    // }
+    // public function downloadInvoice(Order $order)
+    // {
+    //     $pdf = Pdf::loadView('admin.orders.invoice-pdf', compact('order'));
+
+    //     return $pdf->download('invoice-' . $order->order_number . '.pdf');
+    // }
+
+
+    public function invoice(Order $order)
+    {
+        return view('admin.ecommerce.orders.invoice', [
+            'order' => $order,
+            'mode' => 'view'
+        ]);
+    }
+
+    public function printInvoice(Order $order)
+    {
+        return view('admin.ecommerce.orders.invoice', [
+            'order' => $order,
+            'mode' => 'print'
+        ]);
+    }
+
+    public function downloadInvoice(Order $order)
+    {
+        $pdf = Pdf::loadView('admin.ecommerce.orders.invoice', [
+            'order' => $order,
+            'mode' => 'pdf'
+        ]);
+
+        return $pdf->download('invoice-' . $order->order_number . '.pdf');
     }
 }

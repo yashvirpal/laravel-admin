@@ -166,30 +166,49 @@ if (!function_exists('orderStatusBadge')) {
                 'admin_icon' => 'bi-hourglass-split',
                 'text' => 'Pending',
             ],
+
             'processing' => [
                 'class' => 'bg-info text-dark',
                 'icon' => 'fa-spinner',
                 'admin_icon' => 'bi-gear',
                 'text' => 'Processing',
             ],
+
+            'shipped' => [
+                'class' => 'bg-primary',
+                'icon' => 'fa-truck',
+                'admin_icon' => 'bi-truck',
+                'text' => 'Shipped',
+            ],
+
+            'delivered' => [
+                'class' => 'bg-success',
+                'icon' => 'fa-box-check',
+                'admin_icon' => 'bi-box-seam',
+                'text' => 'Delivered',
+            ],
+
             'completed' => [
                 'class' => 'bg-success',
                 'icon' => 'fa-check',
                 'admin_icon' => 'bi-check-circle',
                 'text' => 'Completed',
             ],
+
             'cancelled' => [
                 'class' => 'bg-danger',
                 'icon' => 'fa-times',
                 'admin_icon' => 'bi-x-circle',
                 'text' => 'Cancelled',
             ],
+
             'refunded' => [
                 'class' => 'bg-dark',
                 'icon' => 'fa-undo',
                 'admin_icon' => 'bi-arrow-counterclockwise',
                 'text' => 'Refunded',
             ],
+
             default => [
                 'class' => 'bg-secondary',
                 'icon' => 'fa-circle',

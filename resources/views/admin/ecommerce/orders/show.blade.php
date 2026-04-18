@@ -21,6 +21,65 @@
                 <div class="card-header bg-light">
                     <strong>Order Summary</strong>
                 </div>
+
+                <div class="card-header d-flex justify-content-end align-items-center flex-wrap gap-2">
+
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <!-- Change Order Status -->
+                        <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST"
+                            class="d-flex gap-2 mb-0">
+                            @csrf
+                            @method('PATCH')
+
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+
+                                <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>
+                                    Pending
+                                </option>
+                                <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>
+                                    Processing
+                                </option>
+                                <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>
+                                    Shipped
+                                </option>
+                                <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>
+                                    Delivered
+                                </option>
+                                <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>
+                                    Completed
+                                </option>
+                                <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>
+                                    Cancelled
+                                </option>
+                                <option value="refunded" {{ $order->status == 'refunded' ? 'selected' : '' }}>
+                                    Refunded
+                                </option>
+                            </select>
+                        </form>
+
+                        <!-- Invoice -->
+                        <a href="{{ route('admin.orders.invoice', $order->id) }}" class="btn btn-success btn-sm"
+                            target="_blank">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                            Invoice
+                        </a>
+
+                        <!-- Print -->
+                        <a href="{{ route('admin.orders.invoice.print', $order->id) }}"
+                            class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="bi bi-printer me-1"></i>
+                            Print
+                        </a>
+
+                        <!-- Download -->
+                        <a href="{{ route('admin.orders.invoice.download', $order->id) }}"
+                            class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-download me-1"></i>
+                            Download
+                        </a>
+                    </div>
+                </div>
+
                 <div class="card-body">
 
                     <div class="row g-4">
@@ -167,7 +226,21 @@
                     @foreach($order->items as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->product->title ?? '-' }}
+                            <td><a class="text-decoration-none"
+                                    href="{{ route('products.details', $item->product->slug) }}">{{ $item->product->title ?? 'N/A' }}</a>
+
+
+                                @if(!empty($item->variant_name))
+                                    <div class="small text-muted">
+                                        <strong>Variant:</strong> {{ $item->variant_name }}
+                                    </div>
+                                @endif
+
+                                @if(!empty($item->sku))
+                                    <div class="small text-muted">
+                                        <strong>SKU:</strong> {{ $item->sku }}
+                                    </div>
+                                @endif
                                 @if($item->custom_data)
                                     @php
                                         $customData = is_array($item->custom_data)

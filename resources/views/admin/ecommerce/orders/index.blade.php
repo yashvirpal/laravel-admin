@@ -11,7 +11,8 @@
 
     <div class="card card-primary card-outline mb-4">
         <div class="card-header d-flex justify-content-end align-items-center">
-            <a href="{{ route('admin.orders.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i> Add Order</a>
+            <a href="{{ route('admin.orders.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>
+                Add Order</a>
         </div>
 
         <div class="card-body">
@@ -21,9 +22,10 @@
                         <th>#</th>
                         <th>Order No.</th>
                         <th>Customer</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Created</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Order Status</th>
+                        <!-- <th>Payment Status</th> -->
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -53,8 +55,9 @@
                     { data: 'order_number', name: 'order_no' },
                     { data: 'customer', name: 'user.name', orderable: false, searchable: false },
                     { data: 'total', name: 'total' },
-                    { data: 'status', name: 'status', orderable: false, searchable: false },
                     { data: 'created', name: 'created_at' },
+                    { data: 'status', name: 'status', orderable: false, searchable: false },
+                   // { data: 'payment_status', name: 'payment_status', orderable: false, searchable: false },
                     { data: 'action', name: 'action', orderable: false, searchable: false },
                 ]
             });

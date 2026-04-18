@@ -71,6 +71,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Orders
         Route::resource('orders', OrderController::class);
+        Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+        Route::patch('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::get('/orders/{order}/invoice/print', [OrderController::class, 'printInvoice'])->name('orders.invoice.print');
+        Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
 
         // Coupons
         Route::resource('coupons', CouponController::class);
