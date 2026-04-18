@@ -39,17 +39,43 @@
 
                             {{-- ✅ ORDER INFO --}}
                             <div class="alert alert-light border rounded-3 text-start my-4">
-                                <p class="mb-1"><strong>Order ID:</strong> #{{ $order->id }}</p>
-                                <p class="mb-1"><strong>Total:</strong> {{ currencyformat($order->total) }}</p>
-                                <p class="mb-0">
-                                    <strong>Status:</strong>
-                                    <span class="badge {{ orderStatusBadge($order->status)['class'] }}">
-                                        <i class="fa {{ orderStatusBadge($order->status)['icon'] }}"></i>
-                                        {{ orderStatusBadge($order->status)['text'] }}
-                                    </span>
-                                </p>
-                            </div>
+                                <div class="card border-0 shadow-sm rounded-3">
+                                    <div class="card-body p-4">
 
+                                        {{-- Header: Order ID + Status Badge --}}
+                                        <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+                                            <div>
+                                                <p class="text-muted small mb-0">Order</p>
+                                                <h6 class="fw-semibold mb-0">#{{ $order->id }}</h6>
+                                            </div>
+                                            <span
+                                                class="badge rounded-pill {{ orderStatusBadge($order->status)['class'] }} px-3 py-2">
+                                                <i class="fa {{ orderStatusBadge($order->status)['icon'] }} me-1"></i>
+                                                {{ orderStatusBadge($order->status)['text'] }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Details --}}
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small">Date</span>
+                                            <span class="small fw-medium">{{dateFormat($order->created_at) }}</span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-muted small">Items</span>
+                                            <span class="small fw-medium">{{ count($order->items) }} products</span>
+                                        </div>
+
+                                        {{-- Total --}}
+                                        <div class="d-flex justify-content: between align-items-center pt-3 border-top">
+                                            <span class="fw-semibold">Total</span>
+                                            <span
+                                                class="fw-semibold text-primary fs-6 ms-auto">{{ currencyformat($order->total) }}</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
                             {{-- ✅ SUCCESS EXTRA --}}
                             @if($status === 'success')
                                 <p class="mb-4">
@@ -60,23 +86,73 @@
                             {{-- ❌ FAILED EXTRA --}}
                             @if($status === 'failed')
                                 <div class="alert alert-light border rounded-3 text-start mb-4">
-                                    <p class="mb-1"><strong>Common reasons for failure:</strong></p>
-                                    <ul class="mb-0 ps-3 text-muted small">
-                                        <li>Insufficient account balance</li>
-                                        <li>Card declined by your bank</li>
-                                        <li>Session timeout during payment</li>
-                                        <li>Network issue during transaction</li>
-                                    </ul>
+                                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                                        <div class="card-body p-4">
+
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-warning-subtle text-warning rounded-circle p-2 me-2">
+                                                    <i class="fa fa-exclamation-triangle"></i>
+                                                </div>
+                                                <h6 class="mb-0 fw-semibold">Common Reasons for Payment Failure</h6>
+                                            </div>
+
+                                            <div class="row g-2">
+
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="fa fa-circle text-muted mt-1 me-2" style="font-size:6px;"></i>
+                                                        <span class="text-muted small">Insufficient account balance</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="fa fa-circle text-muted mt-1 me-2" style="font-size:6px;"></i>
+                                                        <span class="text-muted small">Card declined by your bank</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="fa fa-circle text-muted mt-1 me-2" style="font-size:6px;"></i>
+                                                        <span class="text-muted small">Session timeout during payment</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="fa fa-circle text-muted mt-1 me-2" style="font-size:6px;"></i>
+                                                        <span class="text-muted small">Network issue during transaction</span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
                                 </div>
+                            @endif
+
+                            @if(request('failed') && in_array($order->payment_status, ['failed', 'pending']))
+                                <!-- <div class="mt-4">
+                                                                                                                                                                                                            <p class="text-red-600 text-sm mb-2">Your payment was not completed.</p>
+                                                                                                                                                                                                            <button id="retry-payment-btn" data-order="{{ encrypt($order->id) }}"
+                                                                                                                                                                                                                class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
+                                                                                                                                                                                                                Retry Payment
+                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                        </div> -->
+
+
                             @endif
 
                             {{-- ✅ ACTION BUTTONS --}}
                             <div class="d-flex justify-content-center gap-3 flex-wrap mt-3">
 
                                 @if($status === 'failed')
-                                    <a href="{{ route('page', 'checkout') }}" class="btn btn-danger rounded-pill px-4">
+                                    <button id="retry-payment-btn" data-order="{{ encrypt($order->id) }}"
+                                        class="btn btn-danger rounded-pill px-4">
                                         <i class="fas fa-redo me-2"></i> Try Again
-                                    </a>
+                                    </button>
                                 @endif
 
                                 <a href="{{ route('page', 'cart') }}" class="btn btn-outline-secondary rounded-pill px-4">
@@ -112,3 +188,36 @@
         </div>
     </section>
 @endsection
+@push('scripts')
+    <script>
+        document.getElementById('retry-payment-btn').addEventListener('click', function () {
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            fetch('{{ route('payment.retry') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ order: btn.dataset.order })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert(data.message || 'Payment failed. Please try again.');
+                        btn.disabled = false;
+                        btn.textContent = 'Retry Payment';
+                    }
+                })
+                .catch(() => {
+                    alert('Something went wrong.');
+                    btn.disabled = false;
+                    btn.textContent = 'Retry Payment';
+                });
+        });
+    </script>
+@endpush

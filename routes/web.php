@@ -6,7 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\PhonePeWebhookController; 
+use App\Http\Controllers\PhonePeWebhookController;
 use App\Http\Controllers\Api\GeoLocationController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,8 +63,9 @@ Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::post('/process', [CheckoutController::class, 'checkOut'])->name('process');
 });
 
-Route::post('/phonepe/webhook',  [PhonePeWebhookController::class, 'handle'])->name('payment.webhook');
-Route::get('/phonepe/callback',  [CheckoutController::class, 'paymentCallback'])->name('payment.callback'); // ✅ GET not POST
+Route::post('/phonepe/webhook', [PhonePeWebhookController::class, 'handle'])->name('payment.webhook');
+Route::get('/phonepe/callback', [CheckoutController::class, 'paymentCallback'])->name('payment.callback'); // ✅ GET not POST
+Route::post('/payment/retry', [CheckoutController::class, 'retryPayment'])->name('payment.retry')->middleware('auth');
 
 
 

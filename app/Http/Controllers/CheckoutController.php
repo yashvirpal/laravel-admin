@@ -184,7 +184,7 @@ class CheckoutController extends Controller
                 $shippingAddress->save();
             }
 
-           // dd($shippingAddress, $billingAddress, Address::where('user_id', auth()->id())->get()->toArray());
+            // dd($shippingAddress, $billingAddress, Address::where('user_id', auth()->id())->get()->toArray());
 
             // 4️⃣ Create Order
             $order = $this->createOrderFromCart($user, $billingAddress, $shippingAddress, $cart, $request);
@@ -324,6 +324,11 @@ class CheckoutController extends Controller
                 ]);
 
                 $order->update(['payment_status' => 'failed']);
+                // ✅ Record the failed attempt even without a transaction ID
+                // ✅ On missing transaction_id in paymentCallback:
+
+                $this->recordTransaction($order, null, 'failed', ['error' => 'transaction_id missing at callback']);
+
 
                 return redirect()->route('page', ['slug' => 'order', 'order' => encrypt($order->id), 'failed' => 1,])->with('error', 'Payment could not be verified. Please try again.');
             }
@@ -343,13 +348,9 @@ class CheckoutController extends Controller
                     'payment_status' => 'paid',
                     'status' => 'processing',
                 ]);
-                $order->transactions()->create([
-                    'transaction_id' => $transactionId,
-                    'amount' => $order->total,
-                    'payment_method' => 'card',//'phonepe',
-                    'status' => 'success',
-                    'response_data' => $status, // full response array from checkStatus
-                ]);
+                // ✅ On success in paymentCallback:
+                $this->recordTransaction($order, $transactionId, 'success', $status);
+
                 return redirect()->route('page', [
                     'slug' => 'order',
                     'order' => encrypt($order->id),
@@ -358,6 +359,9 @@ class CheckoutController extends Controller
             }
 
             $order->update(['payment_status' => 'failed']);
+            // ✅ On failed state in paymentCallback:
+            $this->recordTransaction($order, $transactionId, 'failed', $status);
+
 
             return redirect()->route('page', [
                 'slug' => 'order',
@@ -370,12 +374,74 @@ class CheckoutController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+            // ✅ On exception in paymentCallback (guard still applies):
+            if (isset($order)) {
+                if (isset($order)) {
+                    $this->recordTransaction($order, null, 'failed', ['error' => $e->getMessage()]);
+                }
 
-            return redirect()->route('page', [
-                'slug' => 'order',
-                'order' => encrypt($order->id),
-                'failed' => 1
+                return redirect()->route('page', [
+                    'slug' => 'order',
+                    'order' => encrypt($order->id),
+                    'failed' => 1,
+                ]);
+            }
+
+            return redirect()->route('home')->with('error', 'Something went wrong. Please contact support.');
+
+            // return redirect()->route('page', [
+            //     'slug' => 'order',
+            //     'order' => encrypt($order->id),
+            //     'failed' => 1
+            // ]);
+        }
+    }
+
+
+    // ─────────────────────────────────────────────
+    // 🔄 RETRY PAYMENT
+    // ─────────────────────────────────────────────
+
+    public function retryPayment(Request $request, PhonePeService $phonePe): JsonResponse
+    {
+        try {
+            $orderId = decrypt($request->input('order'));
+            $order = Order::findOrFail($orderId);
+
+            // ✅ Only allow retry for orders belonging to the authenticated user
+            if ($order->user_id !== auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.',
+                ], 403);
+            }
+
+            // ✅ Only allow retry if payment actually failed or was never completed
+            if (!in_array($order->payment_status, ['pending', 'failed', 'initiated'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This order cannot be retried.',
+                ], 422);
+            }
+
+            // ✅ Reset payment status before retrying
+            $order->update([
+                'payment_status' => 'pending',
+                'transaction_id' => null,
             ]);
+
+            return $this->initiatePhonePePayment($phonePe, $order);
+
+        } catch (\Throwable $e) {
+            Log::error('Retry payment failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again.',
+            ], 500);
         }
     }
 
@@ -613,5 +679,36 @@ class CheckoutController extends Controller
         }
 
         return $order;
+    }
+
+
+    /**
+     * Record a transaction entry regardless of success or failure.
+     * Handles schema constraints: non-null transaction_id, valid enum, text response_data.
+     */
+    private function recordTransaction(Order $order, ?string $transactionId, string $status, array $responseData = []): void
+    {
+        $type = strtolower(
+            $responseData['paymentInstrument']['type']
+            ?? $responseData['data']['paymentInstrument']['type']
+            ?? ''
+        );
+
+        $paymentMethod = match (true) {
+            str_contains($type, 'card') => 'card',
+            str_contains($type, 'upi') => 'upi',
+            str_contains($type, 'wallet') => 'wallet',
+            str_contains($type, 'net_banking'),
+            str_contains($type, 'netbanking') => 'cash',
+            default => 'card',
+        };
+
+        $order->transactions()->create([
+            'transaction_id' => $transactionId ?? 'FAILED-' . $order->id . '-' . time(),
+            'amount' => $order->total,
+            'payment_method' => $paymentMethod,
+            'status' => $status,
+            'response_data' => json_encode($responseData),
+        ]);
     }
 }
