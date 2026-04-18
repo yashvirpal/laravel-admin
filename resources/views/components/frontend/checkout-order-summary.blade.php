@@ -70,30 +70,43 @@
         <div class="shipping-header">
             <span><i class="fas fa-shipping-fast"></i> Shipping Method</span>
         </div>
-        @php
+       @php
             $selectedShipping = $cart->shipping_label ?? null;
-            $selectedAmount = $cart->shipping_total ?? null;
-             $defaultSelected = false;
+            $selectedAmount = $cart->shipping_total ?? 0;
+
+            $isFirstTime = empty($selectedAmount) || (float)$selectedAmount == 0;
         @endphp
+
         @foreach (enabledShippingMethods() as $sm => $smData)
+
         @php
+            $label = labelFromKey($sm);
+
             $isChecked =
-                ($selectedShipping && $selectedShipping === labelFromKey($sm)) ||
-                ($selectedAmount !== null && (float)$selectedAmount == (float)$smData['amount']) ||
-               // ($loop->first && !$selectedShipping);
-                  ($selectedShipping === null && $selectedAmount === null && !$defaultSelected);
-                if ($isChecked) {
-        $defaultSelected = true;
-    }
+                (!$isFirstTime && $selectedShipping === $label)
+                || ($isFirstTime && $loop->first);
         @endphp
 
             <div class="shipping-option">
-                <input type="radio" id="sm_{{ $sm }}" name="shipping" value="{{ $sm }}" data-amount="{{ $smData['amount'] }}" data-label="{{ labelFromKey($sm) }}" {{ $isChecked ? 'checked' : '' }} onchange="updateShipping(this)"/>
+                <input
+                    type="radio"
+                    id="sm_{{ $sm }}"
+                    name="shipping"
+                    value="{{ $sm }}"
+                    data-amount="{{ $smData['amount'] }}"
+                    data-label="{{ $label }}"
+                    {{ $isChecked ? 'checked' : '' }}
+                    onchange="updateShipping(this)"
+                />
+
                 <label for="sm_{{ $sm }}">
-                    {{ labelFromKey($sm) }}
-                    <span class="shipping-price">({{ currencyformat($smData['amount']) }})</span>
+                    {{ $label }}
+                    <span class="shipping-price">
+                        ({{ currencyformat($smData['amount']) }})
+                    </span>
                 </label>
             </div>
+
         @endforeach
     </div>
 

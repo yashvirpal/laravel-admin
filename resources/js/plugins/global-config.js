@@ -286,6 +286,7 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
         event.preventDefault();
 
         const $form = $(event.target);
+        const $btn = $form.find("button[type=submit]");
 
         $.ajax({
             url: $form.attr("action"),
@@ -299,8 +300,12 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
             },
             beforeSend: function () {
                 showLoader();
+                $btn.prop("disabled", true).text("Processing...");
             },
             success(response) {
+                if ($form.length) {
+                    $form[0].reset();
+                }
                 hideLoader();
 
                 if (response.message) {
@@ -309,11 +314,14 @@ export function initFormValidator(formSelector, fields = [], onSuccessCallback =
 
                 if (response.redirect_url) {
                     setTimeout(() => window.location.href = response.redirect_url, 2000);
+                    return;
                 }
+                $btn.prop("disabled", false).text("Submit");
+
             },
             error(xhr) {
                 hideLoader();
-
+                $btn.prop("disabled", false).text("Submit");
                 if (xhr.status === 419) {
                     toastr.error(xhr.responseJSON?.message || 'Session expired. Please refresh the page.');
                     return;
