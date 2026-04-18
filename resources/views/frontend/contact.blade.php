@@ -16,53 +16,104 @@
                         <p class="mb-4">Feel free to contact us JOVIAL VISION. We'd love to hear from you! Whether you have
                             a question, comment, or concern, our team is here to help.</p>
 
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
+                        @if(setting('phone'))
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div class="contact-item-content">
+                                    <h6>Phone</h6>
+                                    <p>
+                                        <a href="tel:{{ preg_replace('/\s+/', '', setting('phone')) }}"
+                                            class="text-decoration-none text-reset">
+                                            {{ setting('phone') }}
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
-                            <div class="contact-item-content">
-                                <h6>Phone</h6>
-                                <p>+91 99115 73173</p>
-                            </div>
-                        </div>
+                        @endif
 
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
+                        @if(setting('email'))
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="contact-item-content">
+                                    <h6>Email</h6>
+                                    <p>
+                                        <a href="mailto:{{ setting('email') }}" class="text-decoration-none text-reset">
+                                            {{ setting('email') }}
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
-                            <div class="contact-item-content">
-                                <h6>Email</h6>
-                                <p>jovialvision04@gmail.com</p>
-                            </div>
-                        </div>
+                        @endif
 
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt"></i>
+                        @if(setting('address'))
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="contact-item-content">
+                                    <h6>Address</h6>
+                                    <p>{{ setting('address') }}</p>
+                                </div>
                             </div>
-                            <div class="contact-item-content">
-                                <h6>Address</h6>
-                                <p>Diksha Mehta, 23b/5 New Rohtak Road, Near Liberty Cinema, Dev Nagar Karol Bagh, New Delhi
-                                    110005 Opp. Bikaner.</p>
-                            </div>
-                        </div>
+                        @endif
 
                         <div class="mt-4">
                             <h6 class="fw-bold mb-3">Follow us on</h6>
+                            @php
+                                $socialLinks = json_decode(setting('social'), true) ?? [];
+
+                                $platforms = [
+                                    'instagram' => [
+                                        'icon' => 'fab fa-instagram',
+                                        'label' => 'Instagram'
+                                    ],
+                                    'youtube' => [
+                                        'icon' => 'fab fa-youtube',
+                                        'label' => 'YouTube'
+                                    ],
+                                    'twitter' => [
+                                        'icon' => 'fab fa-twitter',
+                                        'label' => 'X'
+                                    ],
+                                    'facebook' => [
+                                        'icon' => 'fab fa-facebook-f',
+                                        'label' => 'Facebook'
+                                    ],
+                                ];
+                            @endphp
+
                             <div class="social-links">
-                                <a href="#" class="social-link" aria-label="Instagram">
-                                    <i class="fab fa-instagram"></i>
-                                </a>
-                                <a href="#" class="social-link" aria-label="YouTube">
-                                    <i class="fab fa-youtube"></i>
-                                </a>
-                                <a href="#" class="social-link" aria-label="Twitter">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
-                                <a href="#" class="social-link" aria-label="Facebook">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
+                                @foreach($platforms as $key => $platform)
+                                    @if(!empty($socialLinks[$key]))
+                                        <a href="{{ $socialLinks[$key] }}" class="social-link" target="_blank"
+                                            rel="noopener noreferrer" aria-label="{{ $platform['label'] }}">
+                                            @if ($key == 'twitter')
+                                                <svg class="social-svg-icon" viewBox="0 0 1226.37 1226.37"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="m727.348 519.284 446.727-519.284h-105.86l-387.893 450.887-309.809-450.887h-357.328l468.492 681.821-468.492 544.549h105.866l409.625-476.152 327.181 476.152h357.328l-485.863-707.086zm-144.998 168.544-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721h-162.604l-323.311-462.446z" />
+                                                </svg>
+                                                <style>
+                                                    .social-svg-icon {
+                                                        width: 16px;
+                                                        height: 16px;
+                                                        display: block;
+                                                        margin: auto;
+                                                        fill: currentColor;
+                                                    }
+                                                </style>
+                                            @else
+                                                <i class="{{ $platform['icon'] }}"></i>
+                                            @endif
+                                        </a>
+                                    @endif
+                                @endforeach
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -99,10 +150,17 @@
             </div>
 
             <div class="map-container">
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4727688845447!2d77.18396931508236!3d28.644805782420944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029c4e8b6c5d%3A0x7e5e5e5e5e5e5e5e!2sNew%20Rohtak%20Rd%2C%20Karol%20Bagh%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
-                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
+                @if (setting('map'))
+                    <iframe src="{{ setting('map') }}" width="100%" height="450" style="border:0;" allowfullscreen=""
+                        loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                @else
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4727688845447!2d77.18396931508236!3d28.644805782420944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029c4e8b6c5d%3A0x7e5e5e5e5e5e5e5e!2sNew%20Rohtak%20Rd%2C%20Karol%20Bagh%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
+                        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                @endif
+
             </div>
         </div>
     </section>
