@@ -73,13 +73,18 @@
         @php
             $selectedShipping = $cart->shipping_label ?? null;
             $selectedAmount = $cart->shipping_total ?? null;
+             $defaultSelected = false;
         @endphp
         @foreach (enabledShippingMethods() as $sm => $smData)
         @php
             $isChecked =
                 ($selectedShipping && $selectedShipping === labelFromKey($sm)) ||
                 ($selectedAmount !== null && (float)$selectedAmount == (float)$smData['amount']) ||
-                ($loop->first && !$selectedShipping);
+               // ($loop->first && !$selectedShipping);
+                  ($selectedShipping === null && $selectedAmount === null && !$defaultSelected);
+                if ($isChecked) {
+        $defaultSelected = true;
+    }
         @endphp
 
             <div class="shipping-option">
