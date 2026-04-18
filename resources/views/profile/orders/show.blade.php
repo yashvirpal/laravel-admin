@@ -22,128 +22,140 @@
                                     <strong>Order Summary</strong>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4 mt-3 mt-md-0">
-                                            <h6 class="fw-bold">Shipping Address</h6>
-                                            @if($order->shippingAddress)
-                                                <p class="mb-0">{{ $order->shippingAddress->first_name }}
-                                                    {{ $order->shippingAddress->last_name }}
+                                    
+                                    <div class="row g-4">
+
+                                        <!-- ORDER INFO -->
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded-4 h-100 bg-light">
+
+                                                <h6 class="fw-bold mb-3">Order Details</h6>
+
+                                                <p class="mb-1"><strong>Order #:</strong> {{ $order->order_number }}</p>
+                                                <p class="mb-1"><strong>Customer:</strong> {{ $order->customer_name }}</p>
+
+                                                <p class="mb-1">
+                                                    <strong>Email:</strong>
+                                                    <a href="mailto:{{ $order->customer_email }}"
+                                                        class="text-decoration-none">
+                                                        {{ $order->customer_email }}
+                                                    </a>
                                                 </p>
-                                                <p class="mb-0">{{ $order->shippingAddress->address_line1 }}</p>
-                                                @if($order->shippingAddress->address_line2)
-                                                    <p class="mb-0">{{ $order->shippingAddress->address_line2 }}</p>
-                                                @endif
-                                                <p class="mb-0">{{ $order->shippingAddress->city }},
-                                                    {{ $order->shippingAddress->state }} {{ $order->shippingAddress->zip }}
+
+                                                <p class="mb-1">
+                                                    <strong>Phone:</strong>
+                                                    <a href="tel:{{ $order->customer_phone }}" class="text-decoration-none">
+                                                        {{ $order->customer_phone }}
+                                                    </a>
                                                 </p>
-                                                <p class="mb-0">{{ $order->shippingAddress->phone }}</p>
-                                            @elseif($order->shipping_address)
-                                                {{-- fallback to legacy JSON field --}}
-                                                <p class="mb-0">{{ $order->shipping_address }}</p>
-                                            @else
-                                                <p class="text-muted">Not available</p>
-                                            @endif
+
+                                                <p class="mb-3"><strong>Date:</strong> {{ dateFormat($order->created_at) }}
+                                                </p>
+
+                                                @php $status = orderStatusBadge($order->status); @endphp
+                                                <p class="mb-2">
+                                                    <strong>Order Status:</strong>
+                                                    <span class="badge rounded-pill {{ $status['class'] }} mt-1">
+                                                        <i class="bi {{ $status['admin_icon'] }} me-1"></i>
+                                                        {{ $status['text'] }}
+                                                    </span>
+                                                </p>
+
+                                                @php $pstatus = paymentStatusBadge($order->payment_status); @endphp
+                                                <p class="mb-0">
+                                                    <strong>Payment Status:</strong>
+                                                    <span class="badge rounded-pill {{ $pstatus['class'] }} mt-1">
+                                                        <i class="bi {{ $pstatus['admin_icon'] }} me-1"></i>
+                                                        {{ $pstatus['text'] }}
+                                                    </span>
+                                                </p>
+
+                                            </div>
                                         </div>
 
-                                        <div class="col-md-4 mt-3 mt-md-0">
-                                            <h6 class="fw-bold">Billing Address</h6>
-                                            @if($order->billingAddress)
-                                                <p class="mb-0">{{ $order->billingAddress->first_name }}
-                                                    {{ $order->billingAddress->last_name }}
-                                                </p>
-                                                <p class="mb-0">{{ $order->billingAddress->address_line1 }}</p>
-                                                @if($order->billingAddress->address_line2)
-                                                    <p class="mb-0">{{ $order->billingAddress->address_line2 }}</p>
+                                        <!-- SHIPPING -->
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded-4 h-100">
+
+                                                <h6 class="fw-bold mb-3">Shipping Address</h6>
+
+                                                @if($order->shippingAddress)
+                                                    <p class="mb-1 fw-semibold">
+                                                        {{ $order->shippingAddress->first_name }}
+                                                        {{ $order->shippingAddress->last_name }}
+                                                    </p>
+
+                                                    <p class="mb-1">{{ $order->shippingAddress->address_line1 }}</p>
+
+                                                    @if($order->shippingAddress->address_line2)
+                                                        <p class="mb-1">{{ $order->shippingAddress->address_line2 }}</p>
+                                                    @endif
+
+                                                    <p class="mb-1">
+                                                        {{ $order->shippingAddress->city }},
+                                                        {{ $order->shippingAddress->state }}
+                                                        {{ $order->shippingAddress->zip }}
+                                                    </p>
+
+                                                    <p class="mb-0">
+                                                        <a href="tel:{{ $order->shippingAddress->phone }}"
+                                                            class="text-decoration-none">
+                                                            {{ $order->shippingAddress->phone }}
+                                                        </a>
+                                                    </p>
+
+                                                @elseif($order->shipping_address)
+                                                    <p class="mb-0">{{ $order->shipping_address }}</p>
+                                                @else
+                                                    <p class="text-muted">Not available</p>
                                                 @endif
-                                                <p class="mb-0">{{ $order->billingAddress->city }},
-                                                    {{ $order->billingAddress->state }} {{ $order->billingAddress->zip }}
-                                                </p>
-                                                <p class="mb-0">{{ $order->billingAddress->phone }}</p>
-                                            @elseif($order->billing_address)
-                                                <p class="mb-0">{{ $order->billing_address }}</p>
-                                            @else
-                                                <p class="text-muted">Not available</p>
-                                            @endif
+
+                                            </div>
                                         </div>
 
-                                        <div class="col-md-4 mt-3 mt-md-0">
-                                            <p><strong>Date:</strong> {{ dateFormat($order->created_at) }}</p>
-                                            @php
-                                                $orderBadge = orderStatusBadge($order->status);
-                                                $paymentBadge = paymentStatusBadge($order->payment_status);
-                                            @endphp
-                                            <p>
-                                                <strong>Order Status:</strong>
-                                                <span class="badge {{ $orderBadge['class'] }}">
-                                                    <i class="fa {{ $orderBadge['icon'] }}"></i>
-                                                    {{ $orderBadge['text'] }}
-                                                </span>
-                                            </p>
-                                            <p>
-                                                <strong>Payment Status:</strong>
-                                                <span class="badge {{ $paymentBadge['class'] }}">
-                                                    <!-- <i class="fa {{ $paymentBadge['icon'] }}"></i> -->
-                                                    {{ $paymentBadge['text'] }}
-                                                </span>
-                                            </p>
+                                        <!-- BILLING -->
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded-4 h-100">
+
+                                                <h6 class="fw-bold mb-3">Billing Address</h6>
+
+                                                @if($order->billingAddress)
+                                                    <p class="mb-1 fw-semibold">
+                                                        {{ $order->billingAddress->first_name }}
+                                                        {{ $order->billingAddress->last_name }}
+                                                    </p>
+
+                                                    <p class="mb-1">{{ $order->billingAddress->address_line1 }}</p>
+
+                                                    @if($order->billingAddress->address_line2)
+                                                        <p class="mb-1">{{ $order->billingAddress->address_line2 }}</p>
+                                                    @endif
+
+                                                    <p class="mb-1">
+                                                        {{ $order->billingAddress->city }},
+                                                        {{ $order->billingAddress->state }}
+                                                        {{ $order->billingAddress->zip }}
+                                                    </p>
+
+                                                    <p class="mb-0">
+                                                        <a href="tel:{{ $order->billingAddress->phone }}"
+                                                            class="text-decoration-none">
+                                                            {{ $order->billingAddress->phone }}
+                                                        </a>
+                                                    </p>
+
+                                                @elseif($order->billing_address)
+                                                    <p class="mb-0">{{ $order->billing_address }}</p>
+                                                @else
+                                                    <p class="text-muted">Not available</p>
+                                                @endif
+
+                                            </div>
                                         </div>
 
                                     </div>
                                 </div>
                             </div>
-                            {{-- ================= ADDRESSES ================= --}}
-                            <!-- <div class="card mb-4">
-                                                                                                                                                                                <div class="card-header bg-light">
-                                                                                                                                                                                    <strong>Shipping & Billing</strong>
-                                                                                                                                                                                </div>
-                                                                                                                                                                                <div class="card-body">
-                                                                                                                                                                                    <div class="row">
-                                                                                                                                                                                        <div class="col-md-6">
-                                                                                                                                                                                            <h6 class="fw-bold">Shipping Address</h6>
-                                                                                                                                                                                            @if($order->shippingAddress)
-                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->first_name }}
-                                                                                                                                                                                                    {{ $order->shippingAddress->last_name }}
-                                                                                                                                                                                                </p>
-                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->address_line1 }}</p>
-                                                                                                                                                                                                @if($order->shippingAddress->address_line2)
-                                                                                                                                                                                                    <p class="mb-0">{{ $order->shippingAddress->address_line2 }}</p>
-                                                                                                                                                                                                @endif
-                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->city }},
-                                                                                                                                                                                                    {{ $order->shippingAddress->state }} {{ $order->shippingAddress->zip }}
-                                                                                                                                                                                                </p>
-                                                                                                                                                                                                <p class="mb-0">{{ $order->shippingAddress->phone }}</p>
-                                                                                                                                                                                            @elseif($order->shipping_address)
-                                                                                                                                                                                                {{-- fallback to legacy JSON field --}}
-                                                                                                                                                                                                <p class="mb-0">{{ $order->shipping_address }}</p>
-                                                                                                                                                                                            @else
-                                                                                                                                                                                                <p class="text-muted">Not available</p>
-                                                                                                                                                                                            @endif
-                                                                                                                                                                                        </div>
-
-                                                                                                                                                                                        <div class="col-md-6 mt-3 mt-md-0">
-                                                                                                                                                                                            <h6 class="fw-bold">Billing Address</h6>
-                                                                                                                                                                                            @if($order->billingAddress)
-                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->first_name }}
-                                                                                                                                                                                                    {{ $order->billingAddress->last_name }}
-                                                                                                                                                                                                </p>
-                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->address_line1 }}</p>
-                                                                                                                                                                                                @if($order->billingAddress->address_line2)
-                                                                                                                                                                                                    <p class="mb-0">{{ $order->billingAddress->address_line2 }}</p>
-                                                                                                                                                                                                @endif
-                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->city }},
-                                                                                                                                                                                                    {{ $order->billingAddress->state }} {{ $order->billingAddress->zip }}
-                                                                                                                                                                                                </p>
-                                                                                                                                                                                                <p class="mb-0">{{ $order->billingAddress->phone }}</p>
-                                                                                                                                                                                            @elseif($order->billing_address)
-                                                                                                                                                                                                <p class="mb-0">{{ $order->billing_address }}</p>
-                                                                                                                                                                                            @else
-                                                                                                                                                                                                <p class="text-muted">Not available</p>
-                                                                                                                                                                                            @endif
-                                                                                                                                                                                        </div>
-                                                                                                                                                                                    </div>
-                                                                                                                                                                                </div>
-                                                                                                                                                                            </div> -->
-
 
                             {{-- ================= PRODUCTS ================= --}}
                             <div class="card mb-4">
@@ -209,12 +221,12 @@
                                                 </tr>
                                             @endforeach
                                             <tr>
-                                                <td colspan="4" class="text-center"><strong>Subtotal:</strong></td>
+                                                <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
                                                 <td>{{ currencyformat($order->subtotal) }}
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td colspan="4" class="text-center"><strong>Shipping:</strong></td>
+                                                <td colspan="4" class="text-end"><strong>Shipping:</strong></td>
                                                 <td>
                                                     {{ $order->shipping_total > 0 ? currencyformat($order->shipping_total) : 'Free' }}
                                                     <sub> ({{ $order->shipping_method ?? '' }})</sub>
@@ -222,13 +234,13 @@
                                             </tr>
                                             @if($order->tax_total > 0)
                                                 <tr>
-                                                    <td colspan="4" class="text-center"><strong>Tax:</strong></td>
+                                                    <td colspan="4" class="text-end"><strong>Tax:</strong></td>
                                                     <td> {{ currencyformat($order->tax_total) }}</td>
                                                 </tr>
                                             @endif
                                             @if($order->discount_total > 0)
                                                 <tr>
-                                                    <td colspan="4" class="text-center">
+                                                    <td colspan="4" class="text-end">
                                                         <strong>Applied Coupons:</strong>
                                                         @foreach($order->coupons as $coupon)
                                                             @php
@@ -246,7 +258,7 @@
 
                                             @endif
                                             <tr>
-                                                <td colspan="4" class="text-center"><strong>Total:</strong></td>
+                                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
                                                 <td> {{ currencyformat($order->total) }}</td>
                                             </tr>
                                         </tbody>
@@ -267,7 +279,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Transaction ID</th>
-                                                    <th>Method</th>                                                    
+                                                    <th>Method</th>
                                                     <th>Amount</th>
                                                     <th>Status</th>
                                                 </tr>
@@ -286,11 +298,11 @@
                                                                 <!-- <i class="fa {{ $transactionBadge['icon'] }}"></i> -->
                                                                 {{ $transactionBadge['text'] }}
                                                             </span>
-                                                        </td>                                                        
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
-                                        </table>                                       
+                                        </table>
                                     </div>
                                 </div>
                             @endif
