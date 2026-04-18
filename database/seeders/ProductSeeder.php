@@ -27,21 +27,6 @@ class ProductSeeder extends Seeder
     {
         $author = Admin::first();
 
-        // // 1️⃣ Create Product Categories
-        // $categories = [
-        //     ['title' => 'Electronics', 'slug' => 'electronics', 'status' => true],
-        //     ['title' => 'Clothing', 'slug' => 'clothing', 'status' => true],
-        //     ['title' => 'Home & Kitchen', 'slug' => 'home-kitchen', 'status' => true],
-        // ];
-
-        // foreach ($categories as $cat) {
-        //     ProductCategory::firstOrCreate(
-        //         ['slug' => $cat['slug']],
-        //         array_merge($cat, ['author_id' => $author?->id])
-        //     );
-        // }
-
-
         // -----------------------------
         // PARENT CATEGORY: Shop By Concern
         // -----------------------------
@@ -133,7 +118,7 @@ class ProductSeeder extends Seeder
                 'image' => $item['image'],
                 'status' => 1,
                 'is_featured' => true,
-                
+
             ]);
         }
 
@@ -207,7 +192,9 @@ class ProductSeeder extends Seeder
                 $product->categories()->sync(
                     $categoriesAll->random(rand(1, 2))->pluck('id')->toArray()
                 );
-
+                $product->categories()->sync(
+                    $categoriesAll->random(rand(1, 2))->pluck('id')->push(23)->unique()->toArray()
+                );
                 // 5️⃣ Attach random tags
                 $product->tags()->sync(
                     $tagsAll->random(rand(1, 2))->pluck('id')->toArray()
