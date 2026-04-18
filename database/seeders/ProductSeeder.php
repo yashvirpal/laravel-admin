@@ -132,6 +132,8 @@ class ProductSeeder extends Seeder
                 'parent_id' => null,
                 'image' => $item['image'],
                 'status' => 1,
+                'is_featured' => true,
+                
             ]);
         }
 
