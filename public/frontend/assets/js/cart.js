@@ -69,14 +69,22 @@ function hideLoader() {
 /**
  * Add product to cart
  */
-function addToCart(productId, qty = 1, buyNow = false, variantId = null, customData = null) {
+function addToCart(productId, qty = 1, buyNow = false, variantId = null, customData = null,fromListing = false) {
     showLoader();
 
     // Get quantity from input if available
-    const input = document.querySelector('.qty-input');
-    if (input) {
-        qty = parseInt(input.value) || 1;
+    if (!fromListing) {
+        const input = document.querySelector('.qty-input');
+        if (input) {
+            qty = parseInt(input.value) || 1;
+        }
     }
+    //console.log("QTYYYYYYYYY====="+qty)
+   
+    // const input = document.querySelector('.qty-input');
+    // if (input) {
+    //     qty = parseInt(input.value) || 1;
+    // }
 
     // Get variant if available
     const variantSelect = document.querySelector('#variant-select');
@@ -178,7 +186,7 @@ function addToCart(productId, qty = 1, buyNow = false, variantId = null, customD
  * Add to cart from product listing (simple wrapper)
  */
 function addToCartFromListing(productId) {
-    addToCart(productId, 1, false, null);
+    addToCart(productId, 1, false, null,null,true);
 }
 
 /**
