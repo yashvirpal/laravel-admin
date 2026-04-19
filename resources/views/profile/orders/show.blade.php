@@ -164,7 +164,7 @@
                                 </div>
 
                                 <div class="table-responsive">
-                                    <table class="table mb-0 align-middle">
+                                    <table class="table mb-0 align-middle table-bordered">
                                         <thead>
                                             <tr>
                                                 <th>Product</th>
@@ -180,11 +180,11 @@
                                                     <td>
                                                         <a
                                                             href="{{ route('products.details', $item->product->slug) }}">{{ $item->product->title ?? 'N/A' }}</a>
-                                                        @if(!empty($item->variant_name))
+                                                        <!-- @if(!empty($item->variant_name))
                                                             <div class="small text-muted">
                                                                 <strong>Variant:</strong> {{ $item->variant_name }}
                                                             </div>
-                                                        @endif
+                                                        @endif -->
 
                                                         @if(!empty($item->sku))
                                                             <div class="small text-muted">
@@ -216,7 +216,7 @@
                                                     </td>
 
                                                     <td>
-                                                        {{ $item->variant->variant_name ?? '-' }}
+                                                        {{ $item->variant_name??"-" }}
                                                     </td>
 
                                                     <td>{{ $item->quantity }}</td>
