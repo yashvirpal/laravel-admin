@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 use Yajra\DataTables\Facades\DataTables;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PhonePeService;
 
 
 class OrderController extends Controller
@@ -187,7 +188,7 @@ class OrderController extends Controller
     }
 
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, Order $order, PhonePeService $phonePe)
     {
         $request->validate([
             'status' => 'required|string'
@@ -195,22 +196,45 @@ class OrderController extends Controller
         $order->update([
             'status' => $request->status
         ]);
+        if ($order->payment_status === 'paid' && $order->transaction_id) {
+
+            $originalTransaction = $order->transactions()
+                ->where('status', 'success')
+                ->latest()
+                ->first();
+
+
+            $paymentMethod = $originalTransaction->payment_method ?? 'card';
+
+            $response = $phonePe->refund($order->transaction_id, $order->total);
+
+
+            if ($response['success']) {
+                $order->update(['payment_status' => 'refunded']);
+
+                $order->transactions()->create([
+                    'transaction_id' => $response['refund_id'],
+                    'amount' => $order->total,
+                    'payment_method' => $paymentMethod,
+                    'status' => 'refunded',
+                    'response_data' => json_encode($response['data'] ?? []),
+                ]);
+
+                return back()->with('success', 'Order cancelled and refund initiated successfully.');
+            }
+
+            $order->transactions()->create([
+                'transaction_id' => 'REFUND-FAILED-' . $order->id . '-' . time(),
+                'amount' => $order->total,
+                'payment_method' => $paymentMethod,
+                'status' => 'failed',
+                'response_data' => json_encode($response['data'] ?? []),
+            ]);
+
+            return back()->with('warning', 'Order cancelled but refund failed. Please contact support.');
+        }
         return back()->with('success', 'Order status updated successfully.');
     }
-    // public function invoice(Order $order)
-    // {
-    //     return view('admin.ecommerce.orders.invoice', compact('order'));
-    // }
-    // public function printInvoice(Order $order)
-    // {
-    //     return view('admin.ecommerce.orders.invoice-print', compact('order'));
-    // }
-    // public function downloadInvoice(Order $order)
-    // {
-    //     $pdf = Pdf::loadView('admin.orders.invoice-pdf', compact('order'));
-
-    //     return $pdf->download('invoice-' . $order->order_number . '.pdf');
-    // }
 
 
     public function invoice(Order $order)
