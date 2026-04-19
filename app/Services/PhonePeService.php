@@ -196,7 +196,7 @@ class PhonePeService
 
         $payload = [
             'merchantRefundId' => $merchantRefundId,
-            'merchantOrderId'  => $merchantOrderId,
+            'originalMerchantOrderId'  => $merchantOrderId,
             'amount'           => (int) ($refundAmount * 100),
         ];
 

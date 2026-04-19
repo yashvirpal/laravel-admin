@@ -326,11 +326,46 @@
                                 </div>
                             @endif
 
+                            <div class="d-flex flex-wrap justify-content-start align-items-center gap-2 mt-3 pt-3 border-top">
+                                
+                                {{-- Back Button --}}
+                                <a href="{{ route('profile.orders') }}" 
+                                class="btn btn-light border shadow-sm px-4 rounded-pill">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Back to Orders
+                                </a>
 
-                            <a href="{{ route('profile.orders') }}" class="btn btn-outline-secondary">
+                                {{-- Cancel Button --}}
+                                @if($order->canCancel())
+                                    <form action="{{ route('profile.orders.cancel', $order) }}" 
+                                        method="POST"
+                                        class="m-0"
+                                        onsubmit="return confirm('{{ $order->payment_status === 'paid' ? 'Order will be cancelled and refund will be initiated. Continue?' : 'Are you sure you want to cancel this order?' }}')">
+                                        @csrf
+
+                                        <button type="submit" 
+                                                class="btn {{ $order->payment_status === 'paid' ? 'btn-danger' : 'btn-warning' }} shadow-sm px-4 rounded-pill">
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            {{ $order->payment_status === 'paid' ? 'Cancel & Refund' : 'Cancel Order' }}
+                                        </button>
+                                    </form>
+                                @endif
+
+                            </div>
+                            <!-- <a href="{{ route('profile.orders') }}" class="btn btn-outline-secondary">
                                 Back to Orders
                             </a>
-
+                            
+                            @if($order->canCancel())
+                                <form action="{{ route('profile.orders.cancel', $order) }}" method="POST"
+                                    onsubmit="return confirm('{{ $order->payment_status === 'paid' ? 'Order will be cancelled and refund will be initiated. Continue?' : 'Are you sure you want to cancel this order?' }}')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        {{ $order->payment_status === 'paid' ? 'Cancel & Refund' : 'Cancel Order' }}
+                                    </button>
+                                </form>
+                            @endif -->
                         </div>
 
                     </div>

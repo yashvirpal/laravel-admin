@@ -14,6 +14,7 @@ use App\Models\Order;
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Services\PhonePeService;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -384,7 +385,7 @@ class ProfileController extends Controller
         return view('profile.orders.show', compact('order'));
     }
 
-    public function cancelOrder(Order $order)
+    public function cancelOrder(Order $order, PhonePeService $phonePe)
     {
         $this->authorize('update', $order);
 
@@ -393,6 +394,60 @@ class ProfileController extends Controller
         }
 
         $order->update(['status' => 'cancelled']);
+
+        \Log::info('Cancel order debug', [
+            'order_id' => $order->id,
+            'payment_status' => $order->payment_status,
+            'transaction_id' => $order->transaction_id,
+        ]);
+
+        if ($order->payment_status === 'paid' && $order->transaction_id) {
+
+            $originalTransaction = $order->transactions()
+                ->where('status', 'success')
+                ->latest()
+                ->first();
+
+            \Log::info('Original transaction', [
+                'found' => $originalTransaction ? 'YES' : 'NO',
+                'payment_method' => $originalTransaction->payment_method ?? 'NULL',
+            ]);
+
+            $paymentMethod = $originalTransaction->payment_method ?? 'card';
+
+            $response = $phonePe->refund($order->transaction_id, $order->total);
+
+            \Log::info('PhonePe refund response', [
+                'success' => $response['success'],
+                'refund_id' => $response['refund_id'] ?? 'NULL',
+                'data' => $response['data'] ?? 'NULL',
+                'error' => $response['error'] ?? 'NULL',
+            ]);
+
+            if ($response['success']) {
+                $order->update(['payment_status' => 'refunded']);
+
+                $order->transactions()->create([
+                    'transaction_id' => $response['refund_id'],
+                    'amount' => $order->total,
+                    'payment_method' => $paymentMethod,
+                    'status' => 'refunded',
+                    'response_data' => json_encode($response['data'] ?? []),
+                ]);
+
+                return back()->with('success', 'Order cancelled and refund initiated successfully.');
+            }
+
+            $order->transactions()->create([
+                'transaction_id' => 'REFUND-FAILED-' . $order->id . '-' . time(),
+                'amount' => $order->total,
+                'payment_method' => $paymentMethod,
+                'status' => 'failed',
+                'response_data' => json_encode($response['data'] ?? []),
+            ]);
+
+            return back()->with('warning', 'Order cancelled but refund failed. Please contact support.');
+        }
 
         return back()->with('success', 'Order cancelled successfully!');
     }
