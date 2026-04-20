@@ -89,3 +89,26 @@ Mac mini M4	₹99,900
 BenQ 27” Monitor	₹15,000
 Keychron K2	₹7,000
 Total	₹1,21,900 (~₹1.22L)
+
+
+
+3c5e8c6dc8cf21
+bed9afac3bc58c passs
+
+
+Host
+
+sandbox.smtp.mailtrap.io
+Port
+
+25, 465, 587 or 2525
+Username
+
+3c5e8c6dc8cf21
+
+Auth
+
+PLAIN, LOGIN and CRAM-MD5
+TLS
+
+Optional (STARTTLS on all ports)
