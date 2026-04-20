@@ -92,21 +92,26 @@
                                     value="{{ old('email', $settings['email'] ?? '') }}">
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label fw-semibold">Email 2</label>
+                                <label class="form-label fw-semibold">Admin Email</label>
                                 <input type="email" name="email2" class="form-control"
-                                    value="{{ old('email2', $settings['email2'] ?? '') }}">
+                                    value="{{ old('admin_email', $settings['admin_email'] ?? '') }}">
                             </div>
+                            <!-- <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">Email 2</label>
+                                    <input type="email" name="email2" class="form-control"
+                                        value="{{ old('email2', $settings['email2'] ?? '') }}">
+                                </div> -->
 
                             <div class="col-md-3 mb-3">
                                 <label class="form-label fw-semibold">Phone</label>
                                 <input type="text" name="phone" class="form-control"
                                     value="{{ old('phone', $settings['phone'] ?? '') }}">
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <!-- <div class="col-md-3 mb-3">
                                 <label class="form-label fw-semibold">Phone 2</label>
                                 <input type="text" name="phone2" class="form-control"
                                     value="{{ old('phone2', $settings['phone2'] ?? '') }}">
-                            </div>
+                            </div> -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Address</label>
                                 <textarea name="address"
