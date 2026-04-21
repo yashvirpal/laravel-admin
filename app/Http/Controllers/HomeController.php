@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\Page;
 use App\Models\Slider;
@@ -21,12 +21,15 @@ use App\Models\Author;
 use App\Models\BlogPost as Post;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Models\BulkEnquiry;
 
 use App\Services\CartService;
 use App\Services\WishlistService;
 
-use App\Models\BulkEnquiry;
+
 use Jenssegers\Agent\Agent;
+
+use App\Mail\TemplateMail;
 
 class HomeController extends Controller
 {
@@ -539,13 +542,39 @@ class HomeController extends Controller
         }
 
         try {
-            ContactSubmission::create($request->only('name', 'phone', 'email', 'message'));
+            $agent = new Agent();
+            //$contact = ContactSubmission::create($request->only('name', 'phone', 'email', 'message'));
+            $contact = ContactSubmission::create(array_merge(
+                $request->only('name', 'phone', 'email', 'message'),
+                [
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'browser' => $agent->browser(),
+                    'platform' => $agent->platform(),
+                    'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+                ]
+            ));
+            TemplateMail::sendTo(
+                $contact->email,
+                'emails.customer.contact',
+                ['contact' => $contact],
+                'Thank You for Contacting Us'
+            );
 
-            Mail::send('emails.contact', ['request' => $request], function ($mail) use ($request) {
-                $mail->to('yashvir.pal@kalkine.co.in')
-                    ->subject('New Contact Message: ' . $request->subject)
-                    ->replyTo($request->email);
-            });
+            // Admin notification email
+            TemplateMail::sendToAdmin(
+                'emails.admin.contact',
+                ['contact' => $contact],
+                'New Contact Form Submission',
+                $contact->email
+            );
+
+            // Mail::send('emails.contact_admin', ['request' => $request], function ($mail) use ($request) {
+            //     $mail->to(setting('admin_email'))->subject('New Contact Message: ' . $request->subject)->replyTo($request->email);
+            // });
+            // Mail::send('emails.contact', ['request' => $request], function ($mail) use ($request) {
+            //     $mail->to($request->email)->subject('New Contact Message: ' . $request->subject)->replyTo(setting('admin_email'));
+            // });
 
             return response()->json([
                 'status' => true,
@@ -568,11 +597,36 @@ class HomeController extends Controller
         }
 
         try {
-            Newsletter::create($request->only('email'));
+            $agent = new Agent();
+            // $subscriber = Newsletter::create($request->only('email'));
+            $subscriber = ContactSubmission::create(array_merge(
+                $request->only('email'),
+                [
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'browser' => $agent->browser(),
+                    'platform' => $agent->platform(),
+                    'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+                ]
+            ));
+            TemplateMail::sendTo(
+                $subscriber->email,
+                'emails.admin.newsletter',
+                ['subscriber' => $subscriber],
+                'Thanks for subscribing'
+            );
+            TemplateMail::sendToAdmin(
+                'emails.newsletter',
+                ['subscriber' => $subscriber],
+                'New Newsletter Subscription'
+            );
 
-            Mail::send('emails.newsletter', ['email' => $request->email], function ($mail) use ($request) {
-                $mail->to($request->email)->subject('Thanks for Subscribing to Our Newsletter');
-            });
+            // Mail::send('emails.newsletter_admin', ['request' => $request], function ($mail) use ($request) {
+            //     $mail->to(setting('admin_email'))->subject('New Contact Message: ' . $request->subject)->replyTo($request->email);
+            // });
+            // Mail::send('emails.newsletter', ['email' => $request->email], function ($mail) use ($request) {
+            //     $mail->to($request->email)->subject('Thanks for Subscribing to Our Newsletter');
+            // });
 
             return response()->json([
                 'status' => true,
@@ -621,18 +675,30 @@ class HomeController extends Controller
                 'platform' => $agent->platform(),
                 'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
             ]);
+            TemplateMail::sendTo(
+                $enquiry->email,
+                'emails.customer.bulkenquiry',
+                ['enquiry' => $enquiry],
+                'We Received Your Bulk Enquiry'
+            );
 
+            TemplateMail::sendToAdmin(
+                'emails.admin.bulkenquiry',
+                ['enquiry' => $enquiry],
+                'New Bulk Enquiry Received'
+            );
             //✅ Send mail with clean data
             // Mail::send('emails.bulkenquiry', [
             //     'enquiry' => $enquiry
             // ], function ($mail) use ($request) {
-            //     $mail->to('yashvir.pal@kalkine.co.in')->subject('New Bulk Enquiry from ' . $request->name)->replyTo($request->email);
+            //     $mail->to(setting('admin_email'))->subject('New Bulk Enquiry from ' . $request->name)->replyTo($request->email);
+            // });
+            // Mail::send('emails.bulkenquiry', [
+            //     'enquiry' => $enquiry
+            // ], function ($mail) use ($request) {
+            //     $mail->to($request->email)->subject('New Bulk Enquiry Received')->replyTo(setting('admin_email'));
             // });
 
-            Mail::send('emails.bulkenquiry', ['data' => $enquiry], function ($mail) {
-                $mail->to('yashvir.pal@kalkine.co.in')
-                    ->subject('New Bulk Enquiry Received');
-            });
             DB::commit();
 
             return response()->json([

@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Mail;
+
+class TemplateMail extends Mailable
+{
+    use SerializesModels;
+
+    public $viewFile;
+    public $data;
+    public $subjectLine;
+    public $replyToEmail;
+
+    public function __construct(
+        string $viewFile,
+        array $data = [],
+        string $subjectLine = 'Notification',
+        ?string $replyToEmail = null
+    ) {
+        $this->viewFile = $viewFile;
+        $this->data = $data;
+        $this->subjectLine = $subjectLine;
+        $this->replyToEmail = $replyToEmail;
+    }
+
+    public function build()
+    {
+        $mail = $this->subject($this->subjectLine)
+            ->view($this->viewFile)
+            ->with($this->data);
+
+        if ($this->replyToEmail) {
+            $mail->replyTo($this->replyToEmail);
+        }
+
+        return $mail;
+    }
+
+    public static function sendTo(
+        string $email,
+        string $viewFile,
+        array $data = [],
+        string $subjectLine = 'Notification',
+        ?string $replyToEmail = null
+    ) {
+        $replyToEmail = $replyToEmail ?: setting('admin_email');
+        Mail::to($email)->send(
+            new self($viewFile, $data, $subjectLine, $replyToEmail)
+        );
+    }
+
+    public static function sendToAdmin(
+        string $viewFile,
+        array $data = [],
+        string $subjectLine = 'Admin Notification',
+        ?string $replyToEmail = null
+    ) {
+        self::sendTo(
+            setting('admin_email'),
+            $viewFile,
+            $data,
+            $subjectLine,
+            $replyToEmail
+        );
+    }
+}
