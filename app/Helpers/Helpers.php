@@ -6,7 +6,8 @@ use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\Setting;
-
+use App\Models\Order;
+use App\Mail\TemplateMail;
 use Illuminate\Http\Request;
 use Jenssegers\Agent\Agent;
 
@@ -375,6 +376,34 @@ if (!function_exists('getClientInfo')) {
         ];
     }
 }
+if (!function_exists('sendOrderStatusUpdate')) {
+    function sendOrderStatusUpdate(Order $order): void
+    {
+        $order->load('items');
 
+        $labels = [
+            'pending' => 'Order Pending',
+            'processing' => 'Order Processing',
+            'confirmed' => 'Order Confirmed',
+            'shipped' => 'Order Shipped',
+            'delivered' => 'Order Delivered',
+            'completed' => 'Order Completed 🎉',
+            'cancelled' => 'Order Cancelled',
+            'returned' => 'Order Returned',
+        ];
 
+        TemplateMail::sendTo(
+            $order->customer_email,
+            'emails.customer.order-status',
+            [
+                'order' => $order,
+                'status' => $order->status,
+                'title' => 'Order Update',
+                'headerTitle' => $labels[$order->status] ?? 'Order Update',
+                'footerText' => 'Customer Notification'
+            ],
+            "Order #{$order->order_number} - " . ucfirst($order->status)
+        );
+    }
 
+}

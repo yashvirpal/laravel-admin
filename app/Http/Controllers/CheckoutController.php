@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\ValidationException;
 
+use App\Mail\TemplateMail;
+
 class CheckoutController extends Controller
 {
     protected CartService $cartService;
@@ -198,6 +200,32 @@ class CheckoutController extends Controller
             // 6️⃣ Route by payment method
             if ($request->payment === 'phonepe') {
                 return $this->initiatePhonePePayment($phonePe, $order);
+            } else {
+                //For COD
+                // ✅ Send customer order confirmation email
+                TemplateMail::sendTo(
+                    $order->customer_email,
+                    'emails.customer.order',
+                    [
+                        'order' => $order->load('items'),
+                        'title' => 'Order Confirmation',
+                        'headerTitle' => "Thank You! Order #{$order->order_number}",
+                        'footerText' => 'Customer Order Notification',
+                    ],
+                    "Order Confirmation - #{$order->order_number}"
+                );
+
+                // ✅ Send admin order notification email
+                TemplateMail::sendToAdmin(
+                    'emails.admin.order',
+                    [
+                        'order' => $order->load('items'),
+                        'title' => 'New Order Received',
+                        'headerTitle' => "New Order #{$order->order_number}",
+                        'footerText' => 'Admin Order Notification',
+                    ],
+                    "New Order Received - #{$order->order_number}"
+                );
             }
 
             // COD / offline
@@ -350,6 +378,30 @@ class CheckoutController extends Controller
                 ]);
                 // ✅ On success in paymentCallback:
                 $this->recordTransaction($order, $transactionId, 'success', $status);
+                // ✅ Send customer order confirmation email
+                TemplateMail::sendTo(
+                    $order->customer_email,
+                    'emails.customer.order',
+                    [
+                        'order' => $order->load('items'),
+                        'title' => 'Order Confirmation',
+                        'headerTitle' => "Thank You! Order #{$order->order_number}",
+                        'footerText' => 'Customer Order Notification',
+                    ],
+                    "Order Confirmation - #{$order->order_number}"
+                );
+
+                // ✅ Send admin order notification email
+                TemplateMail::sendToAdmin(
+                    'emails.admin.order',
+                    [
+                        'order' => $order->load('items'),
+                        'title' => 'New Order Received',
+                        'headerTitle' => "New Order #{$order->order_number}",
+                        'footerText' => 'Admin Order Notification',
+                    ],
+                    "New Order Received - #{$order->order_number}"
+                );
 
                 return redirect()->route('page', [
                     'slug' => 'order',
@@ -362,7 +414,18 @@ class CheckoutController extends Controller
             // ✅ On failed state in paymentCallback:
             $this->recordTransaction($order, $transactionId, 'failed', $status);
 
-
+            // ✅ Notify customer of failure
+            TemplateMail::sendTo(
+                $order->customer_email,
+                'emails.customer.payment-failed',
+                [
+                    'order' => $order,
+                    'title' => 'Payment Failed',
+                    'headerTitle' => "Payment Failed - Order #{$order->order_number}",
+                    'footerText' => 'Payment Failure Notification',
+                ],
+                "Payment Failed - #{$order->order_number}"
+            );
             return redirect()->route('page', [
                 'slug' => 'order',
                 'order' => encrypt($order->id),

@@ -434,6 +434,7 @@ class ProfileController extends Controller
                     'status' => 'refunded',
                     'response_data' => json_encode($response['data'] ?? []),
                 ]);
+                sendOrderStatusUpdate($order);
 
                 return back()->with('success', 'Order cancelled and refund initiated successfully.');
             }
@@ -445,9 +446,11 @@ class ProfileController extends Controller
                 'status' => 'failed',
                 'response_data' => json_encode($response['data'] ?? []),
             ]);
+            sendOrderStatusUpdate($order);
 
             return back()->with('warning', 'Order cancelled but refund failed. Please contact support.');
         }
+        sendOrderStatusUpdate($order);
 
         return back()->with('success', 'Order cancelled successfully!');
     }
