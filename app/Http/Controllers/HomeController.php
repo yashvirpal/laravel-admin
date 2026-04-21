@@ -557,24 +557,27 @@ class HomeController extends Controller
             TemplateMail::sendTo(
                 $contact->email,
                 'emails.customer.contact',
-                ['contact' => $contact],
+                [
+                    'contact' => $contact,
+                    'title' => 'Customer Notification',
+                    'headerTitle' => 'Thank You',
+                    'footerText' => 'Customer Notification'
+                ],
                 'Thank You for Contacting Us'
             );
 
             // Admin notification email
             TemplateMail::sendToAdmin(
                 'emails.admin.contact',
-                ['contact' => $contact],
+                [
+                    'contact' => $contact,
+                    'title' => 'Admin Notification',
+                    'headerTitle' => 'New Submission',
+                    'footerText' => 'Admin Notification'
+                ],
                 'New Contact Form Submission',
                 $contact->email
             );
-
-            // Mail::send('emails.contact_admin', ['request' => $request], function ($mail) use ($request) {
-            //     $mail->to(setting('admin_email'))->subject('New Contact Message: ' . $request->subject)->replyTo($request->email);
-            // });
-            // Mail::send('emails.contact', ['request' => $request], function ($mail) use ($request) {
-            //     $mail->to($request->email)->subject('New Contact Message: ' . $request->subject)->replyTo(setting('admin_email'));
-            // });
 
             return response()->json([
                 'status' => true,
@@ -611,22 +614,26 @@ class HomeController extends Controller
             ));
             TemplateMail::sendTo(
                 $subscriber->email,
-                'emails.admin.newsletter',
-                ['subscriber' => $subscriber],
+                'emails.customer.newsletter',
+                [
+                    'subscriber' => $subscriber,
+                    'title' => 'Newsletter Subscription',
+                    'headerTitle' => 'Thanks for subscribing',
+                    'footerText' => 'Newsletter Notification'
+                ],
                 'Thanks for subscribing'
             );
+
             TemplateMail::sendToAdmin(
-                'emails.newsletter',
-                ['subscriber' => $subscriber],
+                'emails.admin.newsletter',
+                [
+                    'subscriber' => $subscriber,
+                    'title' => 'Admin Notification',
+                    'headerTitle' => 'New Newsletter Subscription',
+                    'footerText' => 'Admin Notification'
+                ],
                 'New Newsletter Subscription'
             );
-
-            // Mail::send('emails.newsletter_admin', ['request' => $request], function ($mail) use ($request) {
-            //     $mail->to(setting('admin_email'))->subject('New Contact Message: ' . $request->subject)->replyTo($request->email);
-            // });
-            // Mail::send('emails.newsletter', ['email' => $request->email], function ($mail) use ($request) {
-            //     $mail->to($request->email)->subject('Thanks for Subscribing to Our Newsletter');
-            // });
 
             return response()->json([
                 'status' => true,
@@ -642,7 +649,6 @@ class HomeController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100',
             'email' => 'required|email:rfc,dns|max:150',
-            //  'phone' => 'required|digits_between:8,15',
             'phone' => 'required',
             'company' => 'nullable|string|max:150',
             'products' => 'required|string|max:255',
@@ -678,26 +684,25 @@ class HomeController extends Controller
             TemplateMail::sendTo(
                 $enquiry->email,
                 'emails.customer.bulkenquiry',
-                ['enquiry' => $enquiry],
+                [
+                    'enquiry' => $enquiry,
+                    'title' => 'Bulk Enquiry',
+                    'headerTitle' => 'We Received Your Bulk Enquiry',
+                    'footerText' => 'Customer Notification'
+                ],
                 'We Received Your Bulk Enquiry'
             );
 
             TemplateMail::sendToAdmin(
                 'emails.admin.bulkenquiry',
-                ['enquiry' => $enquiry],
+                [
+                    'enquiry' => $enquiry,
+                    'title' => 'Admin Notification',
+                    'headerTitle' => 'New Bulk Enquiry Received',
+                    'footerText' => 'Admin Notification'
+                ],
                 'New Bulk Enquiry Received'
             );
-            //✅ Send mail with clean data
-            // Mail::send('emails.bulkenquiry', [
-            //     'enquiry' => $enquiry
-            // ], function ($mail) use ($request) {
-            //     $mail->to(setting('admin_email'))->subject('New Bulk Enquiry from ' . $request->name)->replyTo($request->email);
-            // });
-            // Mail::send('emails.bulkenquiry', [
-            //     'enquiry' => $enquiry
-            // ], function ($mail) use ($request) {
-            //     $mail->to($request->email)->subject('New Bulk Enquiry Received')->replyTo(setting('admin_email'));
-            // });
 
             DB::commit();
 

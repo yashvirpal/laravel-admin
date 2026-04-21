@@ -124,23 +124,26 @@
                         <form id="contactForm" method="post" action="{{ route('contact.submit') }}">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
-                                <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
+                                <input type="text" class="form-control" id="name" placeholder="Enter your name" name="name"
+                                    required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                                <input type="email" class="form-control" id="email" placeholder="Enter your email"
+                                    name="email" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone</label>
-                                <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number">
+                                <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number"
+                                    name="phone">
                             </div>
 
                             <div class="mb-4">
                                 <label for="message" class="form-label">Message</label>
                                 <textarea class="form-control" id="message" rows="5" placeholder="Enter your message"
-                                    required></textarea>
+                                    name="message" required></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-send">Send Message</button>

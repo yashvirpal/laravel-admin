@@ -6,9 +6,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 
-class TemplateMail extends Mailable
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class TemplateMail extends Mailable implements ShouldQueue
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
     public $viewFile;
     public $data;
@@ -48,9 +51,15 @@ class TemplateMail extends Mailable
         ?string $replyToEmail = null
     ) {
         $replyToEmail = $replyToEmail ?: setting('admin_email');
-        Mail::to($email)->send(
-            new self($viewFile, $data, $subjectLine, $replyToEmail)
-        );
+        //Mail::to($email)->send(new self($viewFile, $data, $subjectLine, $replyToEmail));
+        Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
+        
+        // QUEUE_CONNECTION=database
+        // php artisan queue:table
+        // php artisan migrate
+        // php artisan queue:work
+        // php artisan queue:work --tries=3        
+        
     }
 
     public static function sendToAdmin(
@@ -59,12 +68,6 @@ class TemplateMail extends Mailable
         string $subjectLine = 'Admin Notification',
         ?string $replyToEmail = null
     ) {
-        self::sendTo(
-            setting('admin_email'),
-            $viewFile,
-            $data,
-            $subjectLine,
-            $replyToEmail
-        );
+        self::sendTo(setting('admin_email'), $viewFile, $data, $subjectLine, $replyToEmail);
     }
 }

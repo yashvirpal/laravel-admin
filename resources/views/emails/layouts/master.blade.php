@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>{{ $title ?? 'Admin Notification' }}</title>
+    <title>{{ $title ?? 'Notification' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,25 +44,6 @@
             padding: 25px;
         }
 
-        .row {
-            margin-bottom: 18px;
-        }
-
-        .label {
-            font-weight: bold;
-            color: #374151;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .value {
-            color: #111827;
-            background: #f9fafb;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-        }
-
         .footer {
             padding: 15px 25px;
             background: #f9fafb;
@@ -74,7 +54,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="email-wrapper">
 
@@ -84,7 +63,7 @@
             </div>
 
             <div class="header-title">
-                {{ $headerTitle ?? 'Admin Notification' }}
+                {{ $headerTitle ?? 'Notification' }}
             </div>
         </div>
 
@@ -93,10 +72,9 @@
         </div>
 
         <div class="footer">
-            Admin Notification • © {{ date('Y') }} {{ config('app.name') }}
+            {{ $footerText ?? 'Notification' }} • © {{ date('Y') }} {{ config('app.name') }}
         </div>
 
     </div>
 </body>
-
 </html>
