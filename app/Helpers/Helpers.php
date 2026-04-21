@@ -4,7 +4,11 @@ use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use App\Models\Setting;
+
+use Illuminate\Http\Request;
+use Jenssegers\Agent\Agent;
 
 
 if (!function_exists('isActiveRoute')) {
@@ -202,11 +206,11 @@ if (!function_exists('orderStatusBadge')) {
                 'text' => 'Cancelled',
             ],
 
-            'refunded' => [
+            'returned' => [
                 'class' => 'bg-dark',
                 'icon' => 'fa-undo',
                 'admin_icon' => 'bi-arrow-counterclockwise',
-                'text' => 'Refunded',
+                'text' => 'Returned',
             ],
 
             default => [
@@ -356,4 +360,21 @@ if (!function_exists('generateOrderNumber')) {
             . strtoupper(Str::random(4));
     }
 }
+if (!function_exists('getClientInfo')) {
+    function getClientInfo(Request $request)
+    {
+        $agent = new Agent();
+        $agent->setUserAgent($request->userAgent());
+
+        return [
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'browser' => $agent->browser(),
+            'platform' => $agent->platform(),
+            'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+        ];
+    }
+}
+
+
 

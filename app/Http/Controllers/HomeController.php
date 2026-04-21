@@ -547,11 +547,7 @@ class HomeController extends Controller
             $contact = ContactSubmission::create(array_merge(
                 $request->only('name', 'phone', 'email', 'message'),
                 [
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'browser' => $agent->browser(),
-                    'platform' => $agent->platform(),
-                    'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+                    getClientInfo($request)
                 ]
             ));
             TemplateMail::sendTo(
@@ -605,11 +601,7 @@ class HomeController extends Controller
             $subscriber = ContactSubmission::create(array_merge(
                 $request->only('email'),
                 [
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'browser' => $agent->browser(),
-                    'platform' => $agent->platform(),
-                    'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+                    getClientInfo($request)
                 ]
             ));
             TemplateMail::sendTo(
@@ -673,13 +665,7 @@ class HomeController extends Controller
                 'message' => $request->message,
                 'products' => $request->products,
                 'quantity' => $request->quantity,
-
-                // 🔥 Tracking
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'browser' => $agent->browser(),
-                'platform' => $agent->platform(),
-                'device' => $agent->isMobile() ? 'Mobile' : 'Desktop',
+                getClientInfo($request)
             ]);
             TemplateMail::sendTo(
                 $enquiry->email,
