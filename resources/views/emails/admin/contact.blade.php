@@ -2,49 +2,65 @@
 
 @section('content')
 
-    <div class="row">
-        <span class="label">Name</span>
-        <div class="value">{{ $contact->name }}</div>
-    </div>
+    <p style="margin-bottom: 20px;">
+        <strong>New Contact Form Submission Received</strong>
+    </p>
 
-    <div class="row">
-        <span class="label">Email</span>
-        <div class="value">{{ $contact->email }}</div>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                overflow: hidden;
+                font-size: 14px;
+                border-collapse: collapse;
+            ">
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb; width: 140px;">Name</td>
+            <td style="padding: 12px;">{{ $contact->name }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">Phone</span>
-        <div class="value">{{ $contact->phone }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Email</td>
+            <td style="padding: 12px;">{{ $contact->email }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">Message</span>
-        <div class="value">{{ $contact->message }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Phone</td>
+            <td style="padding: 12px;">{{ $contact->phone ?? 'N/A' }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">IP Address</span>
-        <div class="value">{{ $contact->ip_address }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Message</td>
+            <td style="padding: 12px; line-height: 1.6;">
+                {{ $contact->message }}
+            </td>
+        </tr>
 
-    <div class="row">
-        <span class="label">User Agent</span>
-        <div class="value">{{ $contact->user_agent ?? 'N/A' }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">IP Address</td>
+            <td style="padding: 12px;">{{ $contact->ip_address ?? 'N/A' }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">Browser</span>
-        <div class="value">{{ $contact->browser ?? 'N/A' }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Browser</td>
+            <td style="padding: 12px;">{{ $contact->browser ?? 'N/A' }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">Platform</span>
-        <div class="value">{{ $contact->platform ?? 'N/A' }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Platform</td>
+            <td style="padding: 12px;">{{ $contact->platform ?? 'N/A' }}</td>
+        </tr>
 
-    <div class="row">
-        <span class="label">Device</span>
-        <div class="value">{{ $contact->device ?? 'N/A' }}</div>
-    </div>
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Device</td>
+            <td style="padding: 12px;">{{ $contact->device ?? 'N/A' }}</td>
+        </tr>
+
+        <tr>
+            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">User Agent</td>
+            <td style="padding: 12px; font-size: 12px; color: #6b7280;">
+                {{ $contact->user_agent ?? 'N/A' }}
+            </td>
+        </tr>
+    </table>
 
 @endsection

@@ -50,16 +50,63 @@ class TemplateMail extends Mailable implements ShouldQueue
         string $subjectLine = 'Notification',
         ?string $replyToEmail = null
     ) {
-        $replyToEmail = $replyToEmail ?: setting('admin_email');
-        //Mail::to($email)->send(new self($viewFile, $data, $subjectLine, $replyToEmail));
-        Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
-        
-        // QUEUE_CONNECTION=database
-        // php artisan queue:table
-        // php artisan migrate
-        // php artisan queue:work
-        // php artisan queue:work --tries=3        
-        
+        try {
+            \Log::info('Mail sending started', [
+                'to' => $email,
+                'view' => $viewFile,
+                'data' => $data,
+                'subject' => $subjectLine
+            ]);
+            $replyToEmail = $replyToEmail ?: setting('admin_email');
+            Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
+             \Log::info('Mail sent successfully', [
+                'to' => $email
+            ]);
+            //Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
+
+            // QUEUE_CONNECTION=database
+            // php artisan queue:table
+            // php artisan migrate
+            // php artisan queue:work
+            // php artisan queue:work --tries=3      
+        } catch (\Exception $e) {
+            \Log::error('Mail send failed: ' . $e->getMessage());
+
+            throw $e;
+        }
+
+    }
+    public static function sendToOld(
+        string $email,
+        string $viewFile,
+        array $data = [],
+        string $subjectLine = 'Notification',
+        ?string $replyToEmail = null
+    ) {
+        try {
+            $replyToEmail = $replyToEmail ?: setting('admin_email');
+
+            \Log::info('Mail sending started', [
+                'to' => $email,
+                'view' => $viewFile,
+                'subject' => $subjectLine
+            ]);
+            app()->forgetInstance('mailer');
+
+
+            Mail::to($email)->send(
+                new self($viewFile, $data, $subjectLine, $replyToEmail)
+            );
+
+            \Log::info('Mail sent successfully', [
+                'to' => $email
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Mail send failed: ' . $e->getMessage());
+
+            throw $e;
+        }
     }
 
     public static function sendToAdmin(

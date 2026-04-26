@@ -193,10 +193,13 @@ class OrderController extends Controller
         $request->validate([
             'status' => 'required|string'
         ]);
+        if ($order->status == 'cancelled') {
+            return back()->with('error', 'Order already cancelled.');
+        }
         $order->update([
             'status' => $request->status
         ]);
-        if ($order->payment_status === 'paid' && $order->transaction_id) {
+        if ($order->payment_status === 'paid' && $order->transaction_id && $request->status === 'cancelled') {
 
             $originalTransaction = $order->transactions()
                 ->where('status', 'success')
@@ -220,6 +223,7 @@ class OrderController extends Controller
                     'response_data' => json_encode($response['data'] ?? []),
                 ]);
                 sendOrderStatusUpdate($order);
+
                 return back()->with('success', 'Order cancelled and refund initiated successfully.');
             }
 

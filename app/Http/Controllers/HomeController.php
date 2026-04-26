@@ -542,13 +542,10 @@ class HomeController extends Controller
         }
 
         try {
-            $agent = new Agent();
             //$contact = ContactSubmission::create($request->only('name', 'phone', 'email', 'message'));
             $contact = ContactSubmission::create(array_merge(
                 $request->only('name', 'phone', 'email', 'message'),
-                [
-                    getClientInfo($request)
-                ]
+                getClientInfo($request)
             ));
             TemplateMail::sendTo(
                 $contact->email,
@@ -581,6 +578,7 @@ class HomeController extends Controller
                 'redirect_url' => route('page', 'thank-you'),
             ]);
         } catch (\Exception $e) {
+            \Log::error('Contact form submit failed: ' . $e->getMessage());
             return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -596,13 +594,11 @@ class HomeController extends Controller
         }
 
         try {
-            $agent = new Agent();
+            //$agent = new Agent();
             // $subscriber = Newsletter::create($request->only('email'));
             $subscriber = ContactSubmission::create(array_merge(
                 $request->only('email'),
-                [
-                    getClientInfo($request)
-                ]
+                getClientInfo($request)
             ));
             TemplateMail::sendTo(
                 $subscriber->email,
@@ -655,18 +651,22 @@ class HomeController extends Controller
         try {
             DB::beginTransaction();
 
-            $agent = new Agent();
+           // $agent = new Agent();
 
-            $enquiry = BulkEnquiry::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'company' => $request->company,
-                'message' => $request->message,
-                'products' => $request->products,
-                'quantity' => $request->quantity,
+            // $enquiry = BulkEnquiry::create([
+            //     'name' => $request->name,
+            //     'email' => $request->email,
+            //     'phone' => $request->phone,
+            //     'company' => $request->company,
+            //     'message' => $request->message,
+            //     'products' => $request->products,
+            //     'quantity' => $request->quantity,
+            //     getClientInfo($request)
+            // ]);
+            $enquiry = BulkEnquiry::create(array_merge(
+                $request->only('name', 'phone', 'email', 'company', 'message', 'products', 'quantity'),
                 getClientInfo($request)
-            ]);
+            ));
             TemplateMail::sendTo(
                 $enquiry->email,
                 'emails.customer.bulkenquiry',
