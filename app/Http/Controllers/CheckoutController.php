@@ -211,6 +211,7 @@ class CheckoutController extends Controller
                         'title' => 'Order Confirmation',
                         'headerTitle' => "Thank You! Order #{$order->order_number}",
                         'footerText' => 'Customer Order Notification',
+                        'isNewOrder' => true,
                     ],
                     "Order Confirmation - #{$order->order_number}"
                 );
@@ -223,6 +224,7 @@ class CheckoutController extends Controller
                         'title' => 'New Order Received',
                         'headerTitle' => "New Order #{$order->order_number}",
                         'footerText' => 'Admin Order Notification',
+                        'isNewOrder' => true,
                     ],
                     "New Order Received - #{$order->order_number}"
                 );
@@ -387,6 +389,7 @@ class CheckoutController extends Controller
                         'title' => 'Order Confirmation',
                         'headerTitle' => "Thank You! Order #{$order->order_number}",
                         'footerText' => 'Customer Order Notification',
+                        'isNewOrder' => true,
                     ],
                     "Order Confirmation - #{$order->order_number}"
                 );
@@ -399,6 +402,7 @@ class CheckoutController extends Controller
                         'title' => 'New Order Received',
                         'headerTitle' => "New Order #{$order->order_number}",
                         'footerText' => 'Admin Order Notification',
+                        'isNewOrder' => true,
                     ],
                     "New Order Received - #{$order->order_number}"
                 );
@@ -423,6 +427,7 @@ class CheckoutController extends Controller
                     'title' => 'Payment Failed',
                     'headerTitle' => "Payment Failed - Order #{$order->order_number}",
                     'footerText' => 'Payment Failure Notification',
+                    'isNewOrder' => true,
                 ],
                 "Payment Failed - #{$order->order_number}"
             );

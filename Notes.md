@@ -60,7 +60,9 @@ scp docker.zip root@72.61.174.220:/var/jv
 Already Product i Cart 
 Order time date
 
-
+http://localhost/contact-us
+http://localhost:5540/
+http://localhost:8080/browser/
 
 #####################################
 mac mini m4 24-512
