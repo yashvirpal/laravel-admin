@@ -81,7 +81,7 @@ p {
     font-weight: 500;
     display: inline-block;
     font-family: var(--font-heading);
-    background: #ffaa3d;
+    background: #fcc300;
     color: #fff;
     transition: .28s ease;
     font-size: 16px !important;
@@ -225,7 +225,7 @@ top header css strat here
 }
 
 .login-box ul li {
-    background: #ffaa3d;
+    background: #fcc300;
     border-radius: 50px;
     position: relative;
 }

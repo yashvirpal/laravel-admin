@@ -8,12 +8,54 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PhonePeWebhookController;
 use App\Http\Controllers\Api\GeoLocationController;
+use App\Models\Order;
+use App\Models\ContactSubmission;
 use Illuminate\Support\Facades\Route;
+
+use App\Mail\TemplateMail;
 
 require __DIR__ . '/admin.php';
 
+Route::get("test", function () {
+   
+    $contact = ContactSubmission::find(1);
+     echo setting('admin_email');
+     echo '<br>';
+    echo $contact->email;
+    //dump($contact);
+    TemplateMail::sendTo(
+        $contact->email,
+        'emails.customer.contact',
+        [
+            'contact' => $contact,
+            'title' => 'Customer Notification',
+            'headerTitle' => 'Thank You',
+            'footerText' => 'Customer Notification'
+        ],
+        'Thank You for Contacting Us'
+    );
+     TemplateMail::sendToAdmin(
+        //setting('admin_email'),
+                'emails.admin.contact',
+                [
+                    'contact' => $contact,
+                    'title' => 'Admin Notification',
+                    'headerTitle' => 'New Submission',
+                    'footerText' => 'Admin Notification'
+                ],
+                'New Contact Form Submission',
+                'contact@yashvirpal.com'
+            );
+});
+// Route::get('/template', function () {
+//     $order = Order::find(27);
+//     sendOrderStatusUpdate($order);
+//     return view('emails.admin.order', [
+//         'order' => $order,
+//         'isNewOrder' => true,
+//     ]);
 
-
+// });
 
 
 // Home & search
