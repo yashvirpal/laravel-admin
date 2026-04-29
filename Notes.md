@@ -52,6 +52,8 @@ sudo chmod -R 777 myapp/storage myapp/bootstrap/cache myapp/database
 | pgAdmin     | [http://localhost:8083](http://localhost:8083) |
 | phpMyAdmin  | [http://localhost:8084](http://localhost:8084) |
 
+docker exec -it laravel_admin_app supervisorctl -s unix:///tmp/supervisor.sock status
+
 
 root@72.61.174.220
 
@@ -114,3 +116,31 @@ PLAIN, LOGIN and CRAM-MD5
 TLS
 
 Optional (STARTTLS on all ports)
+
+
+
+Acer Nitro VG270U S3
+LG 27U631A-B (QHD)
+MSI PRO MP275Q
+
+
+
+Acer Nitro XV272U V3 (27-inch IPS, 180Hz, QHD)
+LG 27U631A-B (27-inch QHD IPS)
+ViewSonic VA2708-2K-MHD 27" QHD Monitor
+benq2790q
+
+
+https://pricehistoryapp.com/product/dell-s2725qc-27-68-58-cm-usb-c-monitor-titan-grey-ips-120hz-350-cd-m2-4-ms-contrast-1500-1-tilt-height-pivot-swivel-adjustable-ports-2x-hdm
+https://pricehistoryapp.com/product/benq-ew2790u-68-58-cm-27-inch-4k-ultra-hd-led-backlit-ips-panel-with-95-p3-ai-contrast-5wx2-trevolo-speakers-usb-type-c-65w-pd-3xhdmi-usb-hu
+
+
+benq ew2790u
+Dell S2722QC
+Dell S2725QC
+LG 27UP650N
+
+
+benq2790q
+benq 3290q
+benq 3290qt

@@ -58,9 +58,10 @@ class TemplateMail extends Mailable implements ShouldQueue
                 'subject' => $subjectLine
             ]);
             $replyToEmail = $replyToEmail ?: setting('admin_email');
-            Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
+            Mail::to($email)->send(new self($viewFile, $data, $subjectLine, $replyToEmail));
              \Log::info('Mail sent successfully', [
-                'to' => $email
+                'to' => $email,
+                'replyToEmail'=> $replyToEmail
             ]);
             //Mail::to($email)->queue(new self($viewFile, $data, $subjectLine, $replyToEmail));
 
@@ -76,45 +77,15 @@ class TemplateMail extends Mailable implements ShouldQueue
         }
 
     }
-    public static function sendToOld(
-        string $email,
-        string $viewFile,
-        array $data = [],
-        string $subjectLine = 'Notification',
-        ?string $replyToEmail = null
-    ) {
-        try {
-            $replyToEmail = $replyToEmail ?: setting('admin_email');
-
-            \Log::info('Mail sending started', [
-                'to' => $email,
-                'view' => $viewFile,
-                'subject' => $subjectLine
-            ]);
-            app()->forgetInstance('mailer');
-
-
-            Mail::to($email)->send(
-                new self($viewFile, $data, $subjectLine, $replyToEmail)
-            );
-
-            \Log::info('Mail sent successfully', [
-                'to' => $email
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Mail send failed: ' . $e->getMessage());
-
-            throw $e;
-        }
-    }
 
     public static function sendToAdmin(
+        //string $admin_email,
         string $viewFile,
         array $data = [],
         string $subjectLine = 'Admin Notification',
         ?string $replyToEmail = null
     ) {
-        self::sendTo(setting('admin_email'), $viewFile, $data, $subjectLine, $replyToEmail);
+        $admin_email=setting('admin_email');
+        self::sendTo($admin_email, $viewFile, $data, $subjectLine, $replyToEmail);
     }
 }

@@ -93,7 +93,7 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label fw-semibold">Admin Email</label>
-                                <input type="email" name="email2" class="form-control"
+                                <input type="email" name="admin_email" class="form-control"
                                     value="{{ old('admin_email', $settings['admin_email'] ?? '') }}">
                             </div>
                             <!-- <div class="col-md-3 mb-3">
