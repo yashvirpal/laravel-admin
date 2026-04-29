@@ -46,6 +46,13 @@ return new class extends Migration {
             // Notes
             $table->text('notes')->nullable();
 
+            $table->string('referrer_url')->nullable();
+            $table->ipAddress('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
+            $table->string('browser')->nullable();
+            $table->string('platform')->nullable();
+            $table->string('device')->nullable();
+
             $table->timestamps();
         });
 

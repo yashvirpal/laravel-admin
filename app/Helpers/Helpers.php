@@ -368,6 +368,7 @@ if (!function_exists('getClientInfo')) {
         $agent->setUserAgent($request->userAgent());
 
         return [
+            'referrer_url' => $request->headers->get('referer') ?? url()->previous(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'browser' => $agent->browser(),

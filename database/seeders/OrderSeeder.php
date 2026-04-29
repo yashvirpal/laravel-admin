@@ -34,7 +34,7 @@ class OrderSeeder extends Seeder
             $shippingAddress = $this->getOrCreateAddress($user, 'shipping');
 
             // Random status & payment
-            $status        = collect(['pending', 'processing', 'completed', 'cancelled', 'refunded'])->random();
+            $status        = collect(['pending', 'processing', 'completed', 'cancelled', 'returned'])->random();
             $paymentMethod = collect(['cash', 'card', 'upi', 'wallet', 'cod'])->random();
 
             $paymentStatus = match ($status) {

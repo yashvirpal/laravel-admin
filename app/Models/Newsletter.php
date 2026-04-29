@@ -9,6 +9,12 @@ class Newsletter extends Model
     protected $fillable = [
         'name',
         'email',
-        'is_subscribed'
+        'is_subscribed',
+        'referrer_url',
+        'ip_address',
+        'user_agent',
+        'browser',
+        'platform',
+        'device',
     ];
 }

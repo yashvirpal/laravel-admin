@@ -14,6 +14,7 @@ class BulkEnquiry extends Model
         'message',
         'products',
         'quantity',
+        'referrer_url',
         'ip_address',
         'user_agent',
         'browser',

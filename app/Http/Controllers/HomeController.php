@@ -639,7 +639,8 @@ class HomeController extends Controller
             'email' => 'required|email:rfc,dns|max:150',
             'phone' => 'required',
             'company' => 'nullable|string|max:150',
-            'products' => 'required|string|max:255',
+            'products' => 'required|array|min:1',
+            'products.*' => 'string|max:255',
             'quantity' => 'required|integer|min:1|max:100000',
             'message' => 'required|string|min:5|max:1000',
         ]);
@@ -650,21 +651,12 @@ class HomeController extends Controller
 
         try {
             DB::beginTransaction();
-
-           // $agent = new Agent();
-
-            // $enquiry = BulkEnquiry::create([
-            //     'name' => $request->name,
-            //     'email' => $request->email,
-            //     'phone' => $request->phone,
-            //     'company' => $request->company,
-            //     'message' => $request->message,
-            //     'products' => $request->products,
-            //     'quantity' => $request->quantity,
-            //     getClientInfo($request)
-            // ]);
+            $productTitles = Product::whereIn('id', $request->products)->pluck('title')->toArray();
             $enquiry = BulkEnquiry::create(array_merge(
-                $request->only('name', 'phone', 'email', 'company', 'message', 'products', 'quantity'),
+                $request->only('name', 'phone', 'email', 'company', 'message', 'quantity'),
+                [
+                    'products' => $productTitles,
+                ],
                 getClientInfo($request)
             ));
             TemplateMail::sendTo(

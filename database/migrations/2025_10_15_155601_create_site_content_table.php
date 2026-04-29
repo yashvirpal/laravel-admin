@@ -67,8 +67,11 @@ return new class extends Migration {
             $table->boolean('status')->default(0);
             $table->string('custom_field')->nullable();
             $table->string('referrer_url')->nullable();
-            $table->string('user_agent')->nullable();
             $table->ipAddress('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
+            $table->string('browser')->nullable();
+            $table->string('platform')->nullable();
+            $table->string('device')->nullable();
             $table->timestamps();
         });
 
@@ -77,6 +80,12 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('name')->nullable(); // Optional
             $table->boolean('is_subscribed')->default(true);
+            $table->string('referrer_url')->nullable();
+            $table->ipAddress('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
+            $table->string('browser')->nullable();
+            $table->string('platform')->nullable();
+            $table->string('device')->nullable();
             $table->timestamps();
         });
 
@@ -115,11 +124,13 @@ return new class extends Migration {
             $table->text('message')->nullable();
             $table->json('products')->nullable(); // optional
             $table->integer('quantity')->default(1);
-            $table->string('ip_address')->nullable();
-            $table->text('user_agent')->nullable();
+            $table->string('custom_field')->nullable();
+            $table->string('referrer_url')->nullable();
+            $table->ipAddress('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
             $table->string('browser')->nullable();
-            $table->string('platform')->nullable(); // OS
-            $table->string('device')->nullable();   // mobile/desktop
+            $table->string('platform')->nullable();
+            $table->string('device')->nullable();
             $table->timestamps();
         });
     }

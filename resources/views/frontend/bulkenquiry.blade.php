@@ -57,7 +57,7 @@
                                     <!-- Product -->
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Product Interested *</label>
-                                        <select name="products" id="productSelect" class="form-control" multiple></select>
+                                        <select name="products[]" id="productSelect" class="form-control" multiple></select>
                                     </div>
 
                                     <!-- Quantity -->

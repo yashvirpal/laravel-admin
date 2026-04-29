@@ -29,6 +29,12 @@ class Order extends Model
         'payment_status',
         'status',
         'notes',
+        'referrer_url',
+        'ip_address',
+        'user_agent',
+        'browser',
+        'platform',
+        'device',
     ];
 
     protected $casts = [

@@ -16,7 +16,10 @@ class ContactSubmission extends Model
         'status',
         'custom_field',
         'referrer_url',
-        'user_agent',
         'ip_address',
+        'user_agent',
+        'browser',
+        'platform',
+        'device',
     ];
 }

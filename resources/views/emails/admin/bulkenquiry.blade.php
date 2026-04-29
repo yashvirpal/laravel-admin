@@ -51,32 +51,6 @@
             </td>
         </tr>
 
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">IP Address</td>
-            <td style="padding: 12px;">{{ $enquiry->ip_address ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Browser</td>
-            <td style="padding: 12px;">{{ $enquiry->browser ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Platform</td>
-            <td style="padding: 12px;">{{ $enquiry->platform ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Device</td>
-            <td style="padding: 12px;">{{ $enquiry->device ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">User Agent</td>
-            <td style="padding: 12px; font-size: 12px; color: #6b7280;">
-                {{ $enquiry->user_agent ?? 'N/A' }}
-            </td>
-        </tr>
     </table>
 
 @endsection

@@ -35,32 +35,6 @@
             </td>
         </tr>
 
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">IP Address</td>
-            <td style="padding: 12px;">{{ $contact->ip_address ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Browser</td>
-            <td style="padding: 12px;">{{ $contact->browser ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Platform</td>
-            <td style="padding: 12px;">{{ $contact->platform ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">Device</td>
-            <td style="padding: 12px;">{{ $contact->device ?? 'N/A' }}</td>
-        </tr>
-
-        <tr>
-            <td style="padding: 12px; font-weight: 600; background: #f9fafb;">User Agent</td>
-            <td style="padding: 12px; font-size: 12px; color: #6b7280;">
-                {{ $contact->user_agent ?? 'N/A' }}
-            </td>
-        </tr>
     </table>
 
 @endsection
